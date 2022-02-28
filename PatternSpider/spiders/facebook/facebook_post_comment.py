@@ -1,0 +1,202 @@
+#!/usr/bin/python3.8
+# -*- coding: utf-8 -*-
+#
+# @Time    : 2022/2/22 9:14
+# @Author  : Feifan Liu
+# @Email   : lff18731218157@163.com
+# @File    : facebook_post_comment.py
+# @Version : 1.0
+
+# Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
+import json
+import re
+import time
+
+import scrapy
+
+from PatternSpider.scrapy_redis.spiders import RedisSpider
+from PatternSpider.servers.ding_talk_server import ding_alarm
+from PatternSpider.settings.spider_names import SpiderNames
+from PatternSpider.spiders.facebook import FacebookUtils
+from PatternSpider.tasks import TaskManage
+from PatternSpider.selenium_manage.base_chrome import FacebookChrome
+from PatternSpider.utils.logger_utils import get_logger
+from PatternSpider.utils.dict_utils import DictUtils
+from PatternSpider.utils.time_utils import timestamp_to_datetime
+
+
+class FacebookPostCommentSpider(RedisSpider):
+    name = SpiderNames.facebook_post_comment
+    redis_key = "start_urls:" + name
+    logger = get_logger(name)
+    task_manage = TaskManage()
+    custom_settings = {
+        'CONCURRENT_REQUESTS': 1,
+        'DOWNLOADER_MIDDLEWARES': {
+            'PatternSpider.middlewares.middlewares.SeleniumMiddleware': 543,
+        }
+    }
+
+    @ding_alarm('spiders', name, logger)
+    def __init__(self):
+        # 创建driver
+        super(FacebookPostCommentSpider, self).__init__(name=self.name)
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
+        self.facebook_chrome.login_facebook()
+        self.dict_util = DictUtils()
+        self.facebook_util = FacebookUtils()
+
+    @ding_alarm('spiders', name, logger)
+    def parse(self, response):
+        task = json.loads(response.meta['task'])
+        # 解析数据
+        page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        task['down_num'] = 0
+        # 解析页面源码中本身中带的评论
+        request = None
+        re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
+        bboxes = re.findall(re_pattern, page_source)
+        if bboxes:
+            bboxes_dicts = [json.loads(box) for box in bboxes]
+            commments_datas, request = self.parse_comment(response, bboxes_dicts, task)
+            for commments_data in commments_datas:
+                yield commments_data
+        # 开始系列点击:
+        first = self.go_comments_first()
+        if not first:
+            return self.close_current_task(task)
+        time.sleep(3)
+        more = self.get_comments_more()
+        if not more:
+            return self.close_current_task(task)
+        yield request if request else self.close_current_task(task)
+
+    @ding_alarm('spiders', name, logger)
+    def parse_graphql(self, response):
+        task = json.loads(response.meta['task'])
+        # 切换到标签页
+        self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        # 点击查看更多
+        more = self.get_comments_more()
+        if not more:
+            return self.close_current_task(task)
+        time.sleep(3)
+        # 获取该标签页的graphql接口数据
+        graphql_data_list = self.facebook_chrome.get_graphql_data()
+
+        guess_nodes = []
+        # 获取想要的帖子 graphql 接口内容
+        for comments_data in graphql_data_list:
+            display_comments = self.dict_util.get_data_from_field(comments_data, 'display_comments')
+            if not display_comments:
+                continue
+            guess_nodes.append(comments_data)
+        # 获取指定响应:
+        guesses_data, request = self.parse_comment(response, guess_nodes, task)
+        for guess in guesses_data:
+            yield guess
+        yield request if request else self.close_current_task(task)
+
+    def parse_comment(self, response, comments_datas, task):
+        comments_count = -1
+        # 解析数据
+        over_datas = []
+        for comments_data in comments_datas:
+            display_comments = self.dict_util.get_data_from_field(comments_data, 'display_comments')
+            if not display_comments:
+                continue
+            comments = display_comments['edges']
+            comments_count = display_comments['count']
+            for comment in comments:
+                node = comment['node']
+                user = node['author']
+                attachment = self.dict_util.get_data_from_field(node['attachments'], 'attachment')
+                attach_list = self.facebook_util.parse_attache(attachment) if attachment else ""
+                content = node['body']['text'] if node['body'] else ""
+                node.update({
+                    "comment_id": node['legacy_fbid'],
+                    "post_id": task['raw']['post_id'],
+                    "post_url": task['raw']['post_url'],
+                    "userid": user['id'],
+                    "homepage": user['url'],
+                    "content": content,
+                    "content_cn": "",
+                    "comment_attach": json.dumps(attach_list) if attach_list else "",
+                    "local_attach": "",
+                    "comment_time": timestamp_to_datetime(node['created_time']) if node[
+                        'created_time'] else timestamp_to_datetime(0),
+                })
+                over_datas.append(node)
+
+        # 下一次请求策略
+        is_next, task = self.facebook_util.is_next_request(task, len(over_datas), feed_count=comments_count)
+        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        if is_next:
+            request = scrapy.Request(
+                response.request.url,
+                callback=self.parse_graphql,
+                meta={"task": json.dumps(task)},
+                dont_filter=True
+            )
+        else:
+            request = None
+        return over_datas, request
+
+    def go_comments_first(self):
+        # 点击最相关：
+        flag = False
+        spans = self.facebook_chrome.driver.find_elements_by_xpath(
+            "//span[@class='d2edcug0 hpfvmrgz qv66sw1b c1et5uql oi732d6d ik7dh3pa ht8s03o8 a8c37x1j fe6kdd0r mau55g9w c8b282yb keod5gw0 nxhoafnm aigsh9s9 d3f4x2em iv3no6db jq4qci2q a3bd9o3v lrazzd5p m9osqain']")
+        for span in spans:
+            if span.text == "最相關" or span.text == "最相关":
+                flag = True
+                span.click()
+                break
+        if not flag:
+            return False
+
+        # 点击所有评论
+        all_comment_spans = self.facebook_chrome.driver.find_elements_by_xpath(
+            "//span[@class='d2edcug0 hpfvmrgz qv66sw1b c1et5uql oi732d6d ik7dh3pa ht8s03o8 a8c37x1j fe6kdd0r mau55g9w c8b282yb keod5gw0 nxhoafnm aigsh9s9 d3f4x2em iv3no6db jq4qci2q a3bd9o3v ekzkrbhg oo9gr5id hzawbc8m']")
+        for all_comment in all_comment_spans:
+            if all_comment.text == "所有留言":
+                all_comment.click()
+                return True
+        return False
+
+    def get_comments_more(self):
+        # 点击查看更多
+        look_mores = self.facebook_chrome.driver.find_elements_by_xpath(
+            "//span[@class='d2edcug0 hpfvmrgz qv66sw1b c1et5uql oi732d6d ik7dh3pa ht8s03o8 a8c37x1j fe6kdd0r mau55g9w c8b282yb keod5gw0 nxhoafnm aigsh9s9 d3f4x2em iv3no6db jq4qci2q a3bd9o3v lrazzd5p m9osqain']")
+        print(look_mores)
+        for look_more in look_mores:
+            if look_more.text == "查看更多留言":
+                self.make_element_into_view(look_more)
+                look_more.click()
+                return True
+        return False
+
+    def make_element_into_view(self, element):
+        location_y = element.location_once_scrolled_into_view['y']
+        while location_y == 0 or location_y > 500:
+            if location_y == 0:
+                self.facebook_chrome.scroll_up()
+            elif location_y > 500:
+                self.facebook_chrome.scroll_down()
+            location_y = element.location_once_scrolled_into_view['y']
+
+    def close_current_task(self, task):
+        """
+        :param task: 请求头中配置的任务参数
+        """
+        # 关闭当前页
+        self.facebook_chrome.driver.close()
+        self.facebook_chrome.get_handle(0)
+        orgin_task = {'url': task['url'], 'raw': task['raw']}
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task))
+
+
+if __name__ == '__main__':
+    from scrapy.cmdline import execute
+
+    execute(('scrapy crawl ' + SpiderNames.facebook_post_comment).split())

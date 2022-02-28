@@ -1,0 +1,87 @@
+#!/usr/bin/python3.8
+# -*- coding: utf-8 -*-
+#
+# @Time    : 2022/2/13 17:31
+# @Author  : Feifan Liu
+# @Email   : lff18731218157@163.com
+# @File    : settings_produce.py
+# @Version : 1.0
+
+# Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
+
+# -*- coding: utf-8 -*-
+import datetime
+import os
+
+# =======================scrapy_配置=====================================================
+ENV = 'produce'
+BOT_NAME = 'PatternSpider'
+SPIDER_MODULES = ['PatternSpider.spiders']
+NEWSPIDER_MODULE = 'PatternSpider.spiders'
+ROBOTSTXT_OBEY = False
+DOWNLOAD_TIMEOUT = 10
+COMMANDS_MODULE = 'PatternSpider.run'
+CONCURRENT_REQUESTS = 16
+REDIS_START_URLS_AS_SET_TAG = True
+HTTPERROR_ALLOWED_CODES = [401, 400]
+IMAGES_STORE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
+
+# ==================代理设置==========================================================================
+PROXY = '127.0.0.1:1080'
+
+# ==================日志相关==========================================================================
+today = datetime.datetime.now()
+LOG_FILE = "/mnt/logs/scrapy_redis/{}_{}_{}.log".format(today.year, today.month, today.day)
+LOG_LEVEL = 'DEBUG'
+LOG_FILE_TASK = "/mnt/logs/scrapy_redis/tasks/{}.log"
+
+# ===scrapy_redis 读取的redis地址  task模块使用此连接地址，因为要保持一致=======================================
+REDIS_URL = "redis://:@127.0.0.1:6379"
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_PASSWD = ''
+REDIS_PARAMS = {'password': '', "decode_components": True}
+
+# ==================中间件相关==========================================================================
+DOWNLOADER_MIDDLEWARES = {
+    'PatternSpider.middlewares.middlewares.RandomUserAgentMiddleware': 543,
+    # 'PatternSpider.middlewares.middlewares.RandomProxyMiddleware': 600,
+}
+ITEM_PIPELINES = {
+    'PatternSpider.pipelines.DownloadImagesPipeline': 400,
+    'PatternSpider.pipelines.MysqlPipeline': 500,
+}
+
+# ==================以下是不同实例数据库的连接信息==========================================================================
+# mysql系列
+MYSQL_BT_RESOURCE = {
+    "host": '124.70.54.93',
+    "port": 3306,
+    "user": 'root',
+    "pwd": 'Ban%2020',
+    "database": 'bt-resource',
+}
+# redis系列
+REDIS_BT_RESOURCE = {
+    'host': '',
+    'port': 6379,
+    'pwd': '',
+    'database': 0,
+}
+# es系列
+ES_BT_RESOURCE = {
+    'hosts': '10.168.160.104',
+    'port': '9200',
+    'username': '',
+    'password': '',
+    'index': 'bt-resource',
+    'doc_type': 'bt-resource',
+
+}
+# minio
+MINIO_DVIDS = {
+    'host': "10.168.160.104",
+    'port': "9000",
+    'ak': "minio",
+    'sk': "minio123456",
+}

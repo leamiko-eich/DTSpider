@@ -1,0 +1,122 @@
+#!/usr/bin/python3.8
+# -*- coding: utf-8 -*-
+#
+# @Time    : 2022/2/22 9:13
+# @Author  : Feifan Liu
+# @Email   : lff18731218157@163.com
+# @File    : facebook_post_like.py
+# @Version : 1.0
+
+# Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
+import json
+import urllib.parse
+
+import scrapy
+
+from PatternSpider.scrapy_redis.spiders import RedisSpider
+from PatternSpider.servers.ding_talk_server import ding_alarm
+from PatternSpider.settings.spider_names import SpiderNames
+from PatternSpider.tasks import TaskManage
+from PatternSpider.selenium_manage.base_chrome import FacebookChrome
+from PatternSpider.utils.logger_utils import get_logger
+from PatternSpider.utils.dict_utils import DictUtils
+from PatternSpider.spiders.facebook import FacebookUtils
+
+
+class FacebookPostLikeSpider(RedisSpider):
+    name = SpiderNames.facebook_post_like
+    redis_key = "start_urls:" + name
+    logger = get_logger(name)
+    task_manage = TaskManage()
+    custom_settings = {
+        'CONCURRENT_REQUESTS': 1,
+        'DOWNLOADER_MIDDLEWARES': {
+            'PatternSpider.middlewares.middlewares.SeleniumMiddleware': 543,
+        }
+    }
+
+    @ding_alarm('spiders', name, logger)
+    def __init__(self):
+        # 创建driver
+        super(FacebookPostLikeSpider, self).__init__(name=self.name)
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
+        self.facebook_chrome.login_facebook()
+        self.dict_util = DictUtils()
+        self.facebook_util = FacebookUtils()
+
+    @ding_alarm('spiders', name, logger)
+    def parse(self, response):
+        task = json.loads(response.meta['task'])
+        self.facebook_chrome.get_page_source_like(task['current_url_index'])
+        yield scrapy.Request(
+            response.request.url,
+            callback=self.parse_graphql,  # 处理响应的回调函数。
+            meta={"task": json.dumps(task)},  # 可以在不同的回调函数中传递数据
+            dont_filter=True
+        )
+
+    @ding_alarm('spiders', name, logger)
+    def parse_graphql(self, response):
+        task = json.loads(response.meta['task'])
+        self.facebook_chrome.get_handle(task['current_url_index'])
+        graphql_datas = self.facebook_chrome.get_graphql_data()
+
+        like_datas = []
+        for graphql_data in graphql_datas:
+            post_data = dict(urllib.parse.parse_qsl(graphql_data['postData'])) if 'postData' in graphql_data else {}
+            if post_data:
+                if "CometUFIReactionsDialog" in post_data['fb_api_req_friendly_name']:
+                    like_datas.append(graphql_data)
+
+        over_datas, request = self.parse_like_user(response, task, like_datas)
+
+        # 数据入库和迭代下次请求
+        for over_data in over_datas:
+            yield over_data
+        yield request if request else self.close_current_page(task)
+
+    def parse_like_user(self, response, task, like_datas):
+        # 解析数据相关：
+        over_datas = []
+        for like_data in like_datas:
+            reactors = self.dict_util.get_data_from_field(like_data, 'reactors')
+            if not reactors:
+                continue
+            for reactor in reactors['edges']:
+                node = reactor['node']
+                node.update({
+                    "post_id": task['raw']['post_id'],
+                    "post_url": task['raw']['post_url'],
+                    "userid": node['id'],
+                    "username": node['name'],
+                    "homepage": node['url'],
+                    "type": "",
+                })
+                over_datas.append(node)
+
+        # 判断是否进行下一次请求
+        is_next, task = self.facebook_util.is_next_request(task, len(over_datas))
+        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        if is_next:
+            request = scrapy.Request(
+                response.request.url,
+                callback=self.parse_graphql,
+                meta={"task": json.dumps(task)},
+                dont_filter=True
+            )
+        else:
+            request = None
+        return over_datas, request
+
+    def close_current_page(self, task):
+        # 关闭当前页
+        self.facebook_chrome.driver.close()
+        self.facebook_chrome.get_handle(0)
+        del task['current_url_index']
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(task))
+
+
+if __name__ == '__main__':
+    from scrapy.cmdline import execute
+
+    execute(('scrapy crawl ' + SpiderNames.facebook_post_like).split())
