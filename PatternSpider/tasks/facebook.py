@@ -113,7 +113,7 @@ class FacebookTask(TaskManage):
         spider_name = ''
         fb_account = TableFBAccount()
         # 采集账号获取
-        account_info = fb_account.find({'id': account_id}, 1)
+        account_info = fb_account.find({'id': int(account_id)}, 1)
         FacebookCookies().write_to_redis(account_info['username'], account_info['password'], account_info['login_key'])
 
         # 被采集信息获取
@@ -133,7 +133,7 @@ class FacebookTask(TaskManage):
 
             if spider_type in [1, 2, 3]:
                 fb_user = TableFBOncePublic() if is_public == 1 else TableFBOnceUser()
-                fb_users = fb_user.find({'task_group_code': group_code, 'group_id': group_id})
+                fb_users = fb_user.find({'task_group_code': group_code, 'group_id': int(group_id)})
                 if spider_type == 1:
                     spider_name = self.add_facebook_user_friends_task(fb_users, priority)
                 elif spider_type == 2:
@@ -141,7 +141,7 @@ class FacebookTask(TaskManage):
                 elif spider_type == 3:
                     spider_name = self.add_facebook_user_guess_task(fb_users, day_length, priority)
             elif spider_type in [4, 5, 6]:
-                fb_posts = TableFBPost().find({'task_group_code': group_code, 'group_id': group_id})
+                fb_posts = TableFBPost().find({'task_group_code': group_code, 'group_id': int(group_id)})
                 if spider_type == 4:
                     spider_name = self.add_facebook_post_comment(fb_posts, priority)
                 elif spider_type == 5:
@@ -151,7 +151,7 @@ class FacebookTask(TaskManage):
         else:
             assert mode == 'daily'
             fb_user = TableFBDailyUser()
-            fb_users = fb_user.find({'group_id': group_id})
+            fb_users = fb_user.find({'group_id': int(group_id)})
             spider_name = self.add_facebook_user_guess_task(fb_users, 2)
 
         return spider_name

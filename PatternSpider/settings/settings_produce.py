@@ -24,6 +24,14 @@ CONCURRENT_REQUESTS = 16
 REDIS_START_URLS_AS_SET_TAG = True
 HTTPERROR_ALLOWED_CODES = [401, 400, 403]
 IMAGES_STORE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
+
+MYEXT_ENABLED = True  # 开启扩展
+IDLE_NUMBER = 300  # 配置允许的空闲时长，每5秒会增加一次IDLE_NUMBER，直到增加到60，程序才会close
+# 在 EXTENSIONS 配置，激活扩展
+EXTENSIONS = {
+    'PatternSpider.extensions.RedisSpiderSmartIdleClosedExensions': 100,
+}
+
 # ===scrapy_redis 读取的redis地址  task模块使用此连接地址，因为要保持一致=======================================
 REDIS_URL = "redis://:@127.0.0.1:6379"
 REDIS_HOST = '127.0.0.1'

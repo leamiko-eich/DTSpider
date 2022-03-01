@@ -1,4 +1,4 @@
-mode=daily
-account_id = 2
-group_id = 4
+mode=once
+account_id=30
+group_id =4
 code=qwed
