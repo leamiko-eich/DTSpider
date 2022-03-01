@@ -35,5 +35,5 @@ class FacebookCookies(RedisCookieModel):
 
 
 if __name__ == '__main__':
-    FacebookCookies().write_to_redis('+8616269456098', 'liufeifan1206', 'QWETR6KKWED5LX7A5E3RJ5QT5OJELQO3')
-    # FacebookCookies().write_to_redis('100069879049118', 'czSlh4rg', 'BFLEDUIK5DGPX7KMWALDBQVWBTZ7FRM3')
+    # FacebookCookies().write_to_redis('+8616269456098', 'liufeifan1206', 'QWETR6KKWED5LX7A5E3RJ5QT5OJELQO3')
+    FacebookCookies().write_to_redis('100069879049118', 'czSlh4rg', 'BFLEDUIK5DGPX7KMWALDBQVWBTZ7FRM3')

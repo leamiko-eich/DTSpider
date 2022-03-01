@@ -1,0 +1,4 @@
+mode=daily
+account_id = 2
+group_id = 4
+code=qwed

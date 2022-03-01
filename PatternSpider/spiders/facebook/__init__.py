@@ -11,6 +11,7 @@
 import threading
 import time
 from PatternSpider.utils.dict_utils import DictUtils
+from PatternSpider.utils.time_utils import datetime_to_timestamp
 
 
 class FacebookUtils:
@@ -31,6 +32,7 @@ class FacebookUtils:
     def is_next_request(task, over_datas_num, **kwargs):
         # 获取需要的参数
         limit_count = int(task['raw'].get('limit_count', -1))
+        limit_day = int(task['raw'].get('limit_day', -1))
         had_count = int(task.get('had_count', 0))
         task['had_count'] = had_count + int(over_datas_num)
 
@@ -42,6 +44,13 @@ class FacebookUtils:
         # 增加自定义限制，默认-1 全部采集
         if limit_count != -1 and limit_count < task['had_count']:
             return False, task
+
+        # 增加时间限制
+        creation_time = kwargs.get('creation_time', -1)
+        if creation_time != -1:
+            creation_stamp = datetime_to_timestamp(creation_time)
+            if int(time.time()) - creation_stamp > limit_day * 24 * 60 * 60:
+                return False, task
 
         # 三次判断是否不再出现数据 因为网络的原因，即便滚动条到底部，也不一定真的采集结束：
         should_finish_count = task.get('should_finish_count', 0)

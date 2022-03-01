@@ -17,7 +17,7 @@ from dateutil.parser import parse
 
 
 def datetime_to_timestamp(datetime_str):
-    return int(time.mktime(time.strptime(datetime_str, "%Y/%m/%d")))
+    return int(time.mktime(time.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")))
 
 
 def us_time_to_timestamp(datetime_str):

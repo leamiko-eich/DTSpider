@@ -410,3 +410,58 @@ class TableFBComment(MysqlModel):
         else:
             self.update_one(query={self.UNIONFILED: item[self.UNIONFILED]}, data_dict=data_dict)
         return True
+
+
+class TableFBTask(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_task'
+    UNIONFILED = 'code'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBOnceUser(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_once_user'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBOncePublic(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_once_public'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBAccount(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_account'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBDailyPublic(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_daily_public'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBDailyUser(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_daily_user'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+class TableFBPost(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_post'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)

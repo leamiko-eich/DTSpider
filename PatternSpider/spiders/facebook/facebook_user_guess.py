@@ -102,6 +102,7 @@ class FacebookUserGuessSpider(RedisSpider):
 
     def parse_guess(self, response, guess_nodes, task):
         # 解析数据：
+        creation_time = -1
         over_datas = []
         for node in guess_nodes:
             comet_sections = self.dict_util.get_data_from_field(node, 'comet_sections')
@@ -136,7 +137,7 @@ class FacebookUserGuessSpider(RedisSpider):
                 "userid": task['raw'].get("userid", 0),
                 "homepage": task['raw'].get("homepage", ""),
                 "name": task['raw'].get("name", ""),
-                "jumpname": task['raw'].get("jumpname", ""),
+                "jumpname": task['raw'].get("homepage", "").replace("https://www.facebook.com/", ""),
 
                 "post_id": post_id,
                 "post_url": post_url.replace('\\', '') if post_url else '',
@@ -169,7 +170,7 @@ class FacebookUserGuessSpider(RedisSpider):
             over_datas.append(node)
 
         # 下一页请求判断
-        is_next, task = self.facebook_util.is_next_request(task, len(over_datas))
+        is_next, task = self.facebook_util.is_next_request(task, len(over_datas), creation_time=creation_time)
         self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
         if is_next:
             request = scrapy.Request(

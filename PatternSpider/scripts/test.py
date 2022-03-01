@@ -1,93 +1,61 @@
-import re
-import json
-from PatternSpider.utils.dict_utils import DictUtils
+import ast
+import time
+import datetime
 
 
-def parse_attache(attachment):
-    if type(attachment) == list:
-        attachment = attachment[0]
-    attach_list = []
-    if attachment:
-        if "all_subattachments" in attachment:
-            nodes = attachment["all_subattachments"]["nodes"]
-            for attach in nodes:
-                typename = attach["media"]["__typename"]
-                uri = dict_util.get_data_from_field(attach, 'uri')
-                caption = dict_util.get_data_from_field(attach, 'accessibility_caption')
-                attach_list.append({
-                    "typename": typename,
-                    "uri": uri.replace('\\', '') if uri else '',
-                    "caption": caption if caption else ''
-                })
-        if "media" in attachment:
-            typename = attachment["media"]["__typename"]
-            if typename == "Photo":
-                uri = dict_util.get_data_from_field(attachment, 'uri')
-                caption = dict_util.get_data_from_field(attachment, 'accessibility_caption')
-                attach_list.append({
-                    "typename": typename,
-                    "uri": uri.replace('\\', '') if uri else '',
-                    "caption": caption if caption else ''
-                })
-            elif typename == "Video":
-                uri = dict_util.get_data_from_field(attachment, 'playable_url')
-                thumbnail = dict_util.get_data_from_field(attachment, 'uri')
-                publish_time = dict_util.get_data_from_field(attachment, 'publish_time')
-                duration = dict_util.get_data_from_field(attachment, 'playable_duration_in_ms')
-                attach_list.append({
-                    "typename": typename,
-                    "uri": uri.replace('\\', '') if uri else '',
-                    "caption": '',
-                    "thumbnail": thumbnail.replace('\\', '') if thumbnail else '',
-                    "publish_time": publish_time if publish_time else '',
-                    "duration": duration if duration else ''
-                })
-            elif typename == 'Sticker':
-                uri = dict_util.get_data_from_field(attachment, 'uri')
-                caption = dict_util.get_data_from_field(attachment, 'name')
-                attach_list.append({
-                    "typename": typename,
-                    "uri": uri.replace('\\', '') if uri else '',
-                    "caption": caption if caption else ''
-                })
-                pass
+def get_minute_diff(time_a, time_b):
+    if time_a <= time_b:
+        return 0
 
-    return attach_list
+    ta = time.strptime(time_a, "%H:%M:%S")
+    tb = time.strptime(time_b, "%H:%M:%S")
+    y, m, d, H, M, S = ta[0:6]
+    date_time_a = datetime.datetime(y, m, d, H, M, S)
+    y, m, d, H, M, S = tb[0:6]
+    date_time_b = datetime.datetime(y, m, d, H, M, S)
+
+    second_diff = (date_time_a - date_time_b).seconds
+    minute_diff = int(round(second_diff / 60, 1))
+
+    return minute_diff
+
+def judge_time_interval(pre_date, next_date):
+    now_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    pre_time = int(time.mktime(time.strptime("{} {}".format(now_date, pre_date), '%Y-%m-%d %H:%M:%S')))
+    next_time = int(time.mktime(time.strptime("{} {}".format(now_date, next_date), '%Y-%m-%d %H:%M:%S')))
+    now_time = int(time.time())
+    if pre_time < now_time < next_time:
+        return True
+    return False
 
 
-dict_util = DictUtils()
+def get_image() -> tuple:
+    """ 获取ECS镜像 """
+    ms = [
+        (1, "image_id", "windows 2019", "07:30:00,10:30:00,13:30:00,16:30:00,19:30:00", "aliyun"),
+        (2, "image_id", "windows 2019", "08:30:00,11:30:00,14:30:00,17:30:00,20:30:00", "aliyun"),
+        (3, "image_id", "windows 2019", "09:30:00,12:30:00,15:30:00,18:30:00,21:30:00", "aliyun")
+    ]
+    now_time = datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S')
+    time_diff = {}
+    for idx, m in enumerate(ms):
+        itv = m[3]  # interval
+        # itv = ast.literal_eval(interval)    # please use ast.literal_eval() instead of eval() for safety sake
+        itv_list = itv.split(',')
+        for i in range(len(itv_list) - 1):
+            cur_val = itv_list[i].strip()
+            next_val = itv_list[i + 1].strip()
+            if cur_val < now_time < next_val:
+                minute_diff = get_minute_diff(next_val, now_time)
+                if minute_diff > 10:
+                    time_diff[idx] = minute_diff
 
-with open('page_source', 'r', encoding='utf-8') as f:
-    page_source = f.read()
-over_datas = []
+    if time_diff:
+        diff_order = sorted(time_diff.items(), key=lambda x: x[1], reverse=False)
+        return ms[diff_order[0][0]] + (diff_order[0][1],)  # 将时间差放入元组中
+    else:
+        return None
 
-bboxes = re.findall('\{"__bbox":\{.*?extra_context.*?\}\}', page_source)
-if bboxes:
-    bboxes_dicts = [json.loads(box) for box in bboxes]
-    for bboxes_dict in bboxes_dicts:
-        display_comments = dict_util.get_data_from_field(bboxes_dict, 'display_comments')
-        if not display_comments:
-            continue
-        comments = display_comments['edges']
-        for comment in comments:
-            node = comment['node']
-            print(node)
-            user = node['author']
-            attachment = dict_util.get_data_from_field(node['attachments'], 'attachment')
-            attach_list = parse_attache(attachment) if attachment else ""
-            content = node['body']['text'] if node['body'] else ""
-            node.update({
-                "comment_id": node['legacy_fbid'],
-                "post_id": "",
-                "post_url": "",
-                "userid": user['id'],
-                "homepage": user['url'],
-                "content": content,
-                "content_cn": "",
-                "comment_attach": json.dumps(attach_list) if attach_list else "",
-                "local_attach": "",
-                "comment_time": node['created_time'],
-            })
-            over_datas.append(node)
 
-print(over_datas)
+if __name__ == '__main__':
+    print(get_image())

@@ -11,6 +11,7 @@
 from PatternSpider.headers import get_url_from_spider_name
 from PatternSpider.models.redis_model import RedisModel
 
+
 class TaskManage(RedisModel):
     CLIENTNAME = 'REDIS_BT_RESOURCE'
     NAME = ''
@@ -32,4 +33,4 @@ class TaskManage(RedisModel):
         if other_raw:
             assert type(other_raw) == dict
             raw.update(other_raw)
-        self.write_task(url=url, raw=raw, spider_name=spider_name)
+        self.write_task(url=url, raw=raw, spider_name=spider_name, score=kwargs.get('priority', 1000))

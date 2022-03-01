@@ -10,7 +10,6 @@
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
 import re
-import traceback
 
 from PatternSpider.scrapy_redis.spiders import RedisSpider
 from PatternSpider.servers.ding_talk_server import ding_alarm

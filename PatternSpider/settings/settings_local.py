@@ -25,6 +25,13 @@ REDIS_START_URLS_AS_SET_TAG = True
 HTTPERROR_ALLOWED_CODES = [401, 400, 403]
 IMAGES_STORE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
 
+MYEXT_ENABLED = True  # 开启扩展
+IDLE_NUMBER = 24  # 配置允许的空闲时长，每5秒会增加一次IDLE_NUMBER，直到增加到60，程序才会close
+# 在 EXTENSIONS 配置，激活扩展
+EXTENSIONS = {
+    'PatternSpider.extensions.RedisSpiderSmartIdleClosedExensions': 100,
+}
+
 # ==================日志相关==========================================================================
 today = datetime.datetime.now()
 LOG_LEVEL = 'INFO'

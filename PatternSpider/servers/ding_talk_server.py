@@ -99,4 +99,4 @@ def ding_alarm(module, spider_name, logger=None):
 
 if __name__ == '__main__':
     ding = DingTalk()
-    ding.send_msg("test", atmobile='18731218157')
+    ding.send_msg("服务器定时任务测试", atmobile='18731218157')
