@@ -9,11 +9,11 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
-from PatternSpider.cookies_manage.base_cookie_manage import RedisCookieModel
+from PatternSpider.cookies_manage import RedisCookieModel
 
 
 class FacebookCookies(RedisCookieModel):
-    CLIENTNAME = 'REDIS_BT_RESOURCE'
+    CLIENTNAME = 'REDIS_DT'
     NAME = 'facebook_account'
 
     # 写cookie

@@ -81,6 +81,7 @@ MONGO_DT = {
     "user": 'root',
     "pwd": '123456',
 }
+
 # redis系列
 REDIS_BT_RESOURCE = {
     'host': '127.0.0.1',
@@ -88,19 +89,31 @@ REDIS_BT_RESOURCE = {
     'pwd': '',
     'database': 0,
 }
-# es系列
-ES_BT_RESOURCE = {
-    'hosts': '10.168.160.104',
-    'port': '9200',
-    'username': '',
-    'password': '',
-    'index': 'bt-resource',
-    'doc_type': 'bt-resource',
+REDIS_HUAWEI = {
+    'host': '114.116.254.66',
+    'port': 6379,
+    'pwd': 'bantu2020',
+    'database': 0,
 }
-# minio ak sk  启动服务的时候获取
-MINIO_DVIDS = {
-    'host': "127.0.0.1",
-    'port': "9000",
-    'ak': "minioadmin",
-    'sk': "minioadmin",
+REDIS_DT = {
+    'host': '127.0.0.1',
+    'port': 6379,
+    'pwd': '',
+    'database': 0,
 }
+# # es系列
+# ES_BT_RESOURCE = {
+#     'hosts': '10.168.160.104',
+#     'port': '9200',
+#     'username': '',
+#     'password': '',
+#     'index': 'bt-resource',
+#     'doc_type': 'bt-resource',
+# }
+# # minio ak sk  启动服务的时候获取
+# MINIO_DVIDS = {
+#     'host': "127.0.0.1",
+#     'port': "9000",
+#     'ak': "minioadmin",
+#     'sk': "minioadmin",
+# }

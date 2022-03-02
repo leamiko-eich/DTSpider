@@ -13,6 +13,8 @@
 # Define here the models for your scraped Extensions
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
+from PatternSpider.models.redis_model import OriginSettingsData
+from PatternSpider.models.mysql_model import TableFBInstance
 
 
 class RedisSpiderSmartIdleClosedExensions(object):
@@ -22,6 +24,8 @@ class RedisSpiderSmartIdleClosedExensions(object):
         self.idle_number = idle_number
         self.idle_list = []
         self.idle_count = 0
+        self.origin_settings_data = OriginSettingsData()
+        self.fb_instance = TableFBInstance()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -70,6 +74,11 @@ class RedisSpiderSmartIdleClosedExensions(object):
             self.idle_count = 0
 
         if self.idle_count > self.idle_number:
-            # 执行关闭爬虫操作
+            # 获取当前机器实例id，并更新数据库状态为3
+            origin_confs = self.origin_settings_data.get_settings_data()
+            instance_id = origin_confs['instance_id']
+            self.fb_instance.update_status(instance_id=instance_id, value=3)
+            # 关闭当前chrome驱动
             spider.facebook_chrome.driver.quit()
+            # 执行关闭爬虫操作
             self.crawler.engine.close_spider(spider, 'Waiting time exceeded')

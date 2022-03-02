@@ -11,8 +11,11 @@
 
 # coding=utf-8
 import socket
+from urllib.request import urlopen
+from json import load
 
-def get_host_ip():
+
+def get_inner_host_ip():
     """
     get host ip address
     获取本机IP地址
@@ -27,6 +30,27 @@ def get_host_ip():
         s.close()
 
     return ip
+
+
+def get_outer_host_ip():
+    try:
+        my_ip = load(urlopen('http://jsonip.com'))['ip']
+        return my_ip
+    except:
+        pass
+
+    try:
+        my_ip = load(urlopen('http://httpbin.org/ip'))['origin']
+        return my_ip
+    except:
+        pass
+
+    try:
+        my_ip = load(urlopen('https://api.ipify.org/?format=json'))['ip']
+        return my_ip
+    except:
+        pass
+    return None
 
 
 def is_port_used(ip, port):
@@ -46,3 +70,8 @@ def is_port_used(ip, port):
         return False
     finally:
         s.close()
+
+
+if __name__ == '__main__':
+    print(get_inner_host_ip())
+    print(get_outer_host_ip())

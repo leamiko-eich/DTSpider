@@ -1,4 +1,5 @@
-mode=once
+mode=asd
 account_id=30
-group_id =4
+group_id=4
 code=qwed
+instance_id=qwed

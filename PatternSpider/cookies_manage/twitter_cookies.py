@@ -11,7 +11,7 @@
 import json
 import re
 import requests
-from PatternSpider.cookies_manage.base_cookie_manage import RedisCookieModel
+from PatternSpider.cookies_manage import RedisCookieModel
 
 
 def get_infos():
@@ -53,7 +53,7 @@ def get_infos():
 
 
 class TwitterCookies(RedisCookieModel):
-    CLIENTNAME = 'REDIS_BT_RESOURCE'
+    CLIENTNAME = 'REDIS_DT'
     NAME = 'twitter_tourists'
 
     # 写cookie

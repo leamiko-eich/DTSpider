@@ -26,7 +26,7 @@ HTTPERROR_ALLOWED_CODES = [401, 400, 403]
 IMAGES_STORE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
 
 MYEXT_ENABLED = True  # 开启扩展
-IDLE_NUMBER = 300  # 配置允许的空闲时长，每5秒会增加一次IDLE_NUMBER，直到增加到60，程序才会close
+IDLE_NUMBER = 60  # 配置允许的空闲时长，每5秒会增加一次IDLE_NUMBER，直到增加到60，程序才会close
 # 在 EXTENSIONS 配置，激活扩展
 EXTENSIONS = {
     'PatternSpider.extensions.RedisSpiderSmartIdleClosedExensions': 100,
@@ -67,6 +67,7 @@ MYSQL_DT = {
     "pwd": 'bantu2021!',
     "database": 'social_data',
 }
+
 # mongo系列
 MONGO_DT = {
     "host": '114.116.254.66',
@@ -74,8 +75,21 @@ MONGO_DT = {
     "user": 'root',
     "pwd": 'Bantu%2022',
 }
+
 # redis系列
 REDIS_BT_RESOURCE = {
+    'host': '127.0.0.1',
+    'port': 6379,
+    'pwd': '',
+    'database': 0,
+}
+REDIS_HUAWEI = {
+    'host': '114.116.254.66',
+    'port': 6379,
+    'pwd': 'bantu2020',
+    'database': 0,
+}
+REDIS_DT = {
     'host': '127.0.0.1',
     'port': 6379,
     'pwd': '',

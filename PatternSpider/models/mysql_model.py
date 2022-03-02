@@ -39,9 +39,11 @@ class MysqlModel:
         where_list = []
         for k, v in data_dict.items():
             where_list.append('%s="%s"' % (k, v))
-        sql = sql % (' and '.join(where_list))
+        sql %= ' and '.join(where_list)
         self.cursor.execute(sql)
-        if limit:
+        if limit == 1:
+            return self.cursor.fetchone()
+        elif limit:
             return self.cursor.fetchmany(limit)
         else:
             return self.cursor.fetchall()
@@ -459,9 +461,21 @@ class TableFBDailyUser(MysqlModel):
     UNIONFILED = 'id'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
 
+
 class TableFBPost(MysqlModel):
     CLIENTNAME = 'MYSQL_DT'
     DATABASE = 'social_data'
     COLL = 'fb_post'
     UNIONFILED = 'id'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+
+class TableFBInstance(MysqlModel):
+    CLIENTNAME = 'MYSQL_DT'
+    DATABASE = 'social_data'
+    COLL = 'fb_instance'
+    UNIONFILED = 'instance_id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def update_status(self, instance_id, value: int):
+        return self.update_one({self.UNIONFILED: instance_id}, {'status': value})
