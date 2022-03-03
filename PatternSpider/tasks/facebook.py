@@ -13,179 +13,185 @@ from PatternSpider.settings.spider_names import SpiderNames
 from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBOnceUser, TableFBTask, TableFBAccount
 from PatternSpider.models.mysql_model import TableFBPost, TableFBDailyUser
 from PatternSpider.cookies_manage.facebook_cookies import FacebookCookies
+from PatternSpider.spiders.facebook import FacebookUtils
 
 
 class FacebookTask(TaskManage):
+    facebook_utils = FacebookUtils()
 
-    def add_facebook_user_task(self, user_infos, priority=1000, **kwargs):
+    def add_facebook_user_task(self, user_infos, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
-        for user in user_infos:
+        total_task_infos = kwargs.get('total_task_infos', {})
+        for user_info in user_infos:
+            total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user,
-                username=user['name'],
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                username=user_info['name'],
+                total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user
 
-    def add_facebook_user_friends_task(self, user_infos, priority=1000, **kwargs):
+    def add_facebook_user_friends_task(self, user_infos, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
+        total_task_infos = kwargs.get('total_task_infos', '')
         for user_info in user_infos:
+            total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user_friends,
                 source_userid=user_info['userid'],
                 source_homepage=user_info['homepage'],
                 username=user_info['name'],
                 limit_count=user_info.get('limit_count', -1),
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user_friends
 
-    def add_facebook_user_guess_task(self, user_infos, priority=1000, **kwargs):
+    def add_facebook_user_guess_task(self, user_infos, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
-        for user in user_infos:
+        total_task_infos = kwargs.get('total_task_infos', {})
+        for user_info in user_infos:
+            total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user_guess,
-                name=user['name'],
-                userid=user['userid'],
-                homepage=user['homepage'],
+                name=user_info['name'],
+                userid=user_info['userid'],
+                homepage=user_info['homepage'],
                 limit_count=-1,
-                limit_day=kwargs['limit_day'],
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                limit_day=total_task_infos['task_info']['day_length'],
+                total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user_guess
 
-    def add_facebook_post_like(self, posts, priority=1000, **kwargs):
+    def add_facebook_post_like(self, posts, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
+        total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_like,
                 post_url=post['post_url'],
                 post_id=post['post_id'],
                 limit_count=-1,
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_like
 
-    def add_facebook_post_share(self, posts, priority=1000, **kwargs):
+    def add_facebook_post_share(self, posts, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
+        total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_share,
                 post_url=post['post_url'],
                 post_id=post['post_id'],
                 limit_count=-1,
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                total_task_infos=total_task_infos
             )
 
         return SpiderNames.facebook_post_share
 
-    def add_facebook_post_comment(self, posts, priority=1000, **kwargs):
+    def add_facebook_post_comment(self, posts, **kwargs):
         """
         参数解释：
         user_names，facebook用户列表
         """
+        total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_comment,
                 post_url=post['post_url'],
                 post_id=post['post_id'],
                 limit_count=-1,
-                priority=priority,
-                instance_id=kwargs['instance_id']
+                total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_comment
 
-    def add_task_from_msyql(self, mode, account_id, code, group_id, instance_id):
+    def add_task_from_mysql(self, mode, account_id, code, group_ids):
+        task_type_mapping = {
+            1: "fd_status", 2: "ui_status", 3: "tl_status", 4: "c_status", 5: "l_status", 6: "s_status"
+        }
+        total_task_infos = {
+            'mode': mode,
+            'account_id': account_id,
+            'code': code,
+            'task_type_mapping': task_type_mapping
+        }
         spider_name = SpiderNames.facebook_user
         fb_account = TableFBAccount()
         # 采集账号获取
         account_info = fb_account.find({'id': int(account_id)}, 1)
         FacebookCookies().write_to_redis(account_info['username'], account_info['password'], account_info['login_key'])
-        # 被采集信息获取
+        fb_mysql_task = []
         if mode == "once":
             fb_task = TableFBTask()
             task_info = fb_task.find({'code': code}, 1)
-            # 是否是公共主页
-            is_public = int(task_info['is_public'])
-            # 优先级
-            priority = int(task_info['priority'])
+            total_task_infos['task_info'] = task_info
             # 采集类型
             spider_type = int(task_info['type'])
-            # 任务组编号
-            group_code = task_info['group_code']
-            # 采集天数
-            day_length = task_info['day_length']
+            # 被采集信息获取
+            table = self.facebook_utils.get_table_from_task(mode, spider_type, int(task_info['is_public']))
+            for group_id in group_ids:
+                fb_mysql_task += table.find({
+                    'task_group_code': task_info['group_code'],
+                    'group_id': int(group_id),
+                    task_type_mapping[spider_type]: 0
+                })
 
-            if spider_type in [1, 2, 3]:
-                fb_user = TableFBOncePublic() if is_public == 1 else TableFBOnceUser()
-                fb_users = fb_user.find({'task_group_code': group_code, 'group_id': int(group_id)})
-                if spider_type == 1:
-                    spider_name = self.add_facebook_user_friends_task(
-                        user_infos=fb_users,
-                        priority=priority,
-                        instance_id=instance_id
-                    )
-                elif spider_type == 2:
-                    spider_name = self.add_facebook_user_task(
-                        user_infos=fb_users,
-                        priority=priority,
-                        instance_id=instance_id
-                    )
-                elif spider_type == 3:
-                    spider_name = self.add_facebook_user_guess_task(
-                        user_infos=fb_users,
-                        priority=priority,
-                        instance_id=instance_id,
-                        limit_day=day_length
-                    )
-            elif spider_type in [4, 5, 6]:
-                fb_posts = TableFBPost().find({'task_group_code': group_code, 'group_id': int(group_id)})
-                if spider_type == 4:
-                    spider_name = self.add_facebook_post_comment(
-                        posts=fb_posts,
-                        priority=priority,
-                        instance_id=instance_id
-                    )
-                elif spider_type == 5:
-                    spider_name = self.add_facebook_post_like(
-                        posts=fb_posts,
-                        priority=priority,
-                        instance_id=instance_id
-                    )
-                elif spider_type == 6:
-                    spider_name = self.add_facebook_post_share(
-                        posts=fb_posts,
-                        priority=priority,
-                        instance_id=instance_id
-                    )
+            # 开始添加任务到redis
+            if spider_type == 1:
+                spider_name = self.add_facebook_user_friends_task(
+                    user_infos=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
+            elif spider_type == 2:
+                spider_name = self.add_facebook_user_task(
+                    user_infos=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
+            elif spider_type == 3:
+                spider_name = self.add_facebook_user_guess_task(
+                    user_infos=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
+            elif spider_type == 4:
+                spider_name = self.add_facebook_post_comment(
+                    posts=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
+            elif spider_type == 5:
+                spider_name = self.add_facebook_post_like(
+                    posts=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
+            elif spider_type == 6:
+                spider_name = self.add_facebook_post_share(
+                    posts=fb_mysql_task,
+                    total_task_infos=total_task_infos
+                )
         elif mode == 'daily':
             fb_user = TableFBDailyUser()
-            fb_users = fb_user.find({'group_id': int(group_id)})
-            spider_name = self.add_facebook_user_guess_task(fb_users, 2)
+            for group_id in group_ids:
+                fb_mysql_task += fb_user.find({'group_id': int(group_id)})
 
+            spider_name = self.add_facebook_user_guess_task(
+                user_infos=fb_mysql_task,
+                total_task_infos=total_task_infos
+            )
         return spider_name
-
-
-if __name__ == '__main__':
-    funcs = dir(FacebookTask)
-    print(funcs)

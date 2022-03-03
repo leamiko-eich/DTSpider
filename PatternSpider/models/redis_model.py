@@ -8,8 +8,6 @@
 # @Version : 1.0
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
-
-# -*- coding: UTF-8 -*-
 import json
 from redis import WatchError
 from PatternSpider.models.link_manage import LinkManege
@@ -71,6 +69,9 @@ class RedisModel:
             self.db.zadd(key, {json.dumps(data_dict, ensure_ascii=False): score})
         except BaseException as e:
             print("add redis %s" % e)
+
+    def zset_get_all(self, key):
+        return self.db.zrange(key, 0, -1)
 
     def get_count(self, key):
         return self.db.zcard(key)

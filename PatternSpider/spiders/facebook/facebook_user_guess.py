@@ -47,6 +47,8 @@ class FacebookUserGuessSpider(RedisSpider):
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
         task = json.loads(response.meta['task'])
+        # 更新当前被采集对象为进行时
+        self.facebook_util.update_current_user_status(task, 1)
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
@@ -216,6 +218,8 @@ class FacebookUserGuessSpider(RedisSpider):
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
+        # 更新当前被采集对象为完成
+        self.facebook_util.update_current_user_status(task, 2)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task))
 

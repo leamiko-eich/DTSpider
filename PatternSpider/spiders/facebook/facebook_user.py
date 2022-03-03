@@ -18,6 +18,7 @@ from PatternSpider.tasks import TaskManage
 from PatternSpider.selenium_manage.base_chrome import FacebookChrome
 from PatternSpider.utils.logger_utils import get_logger
 from PatternSpider.utils.dict_utils import DictUtils
+from PatternSpider.spiders.facebook import FacebookUtils
 
 
 class FacebookUserSpider(RedisSpider):
@@ -39,10 +40,12 @@ class FacebookUserSpider(RedisSpider):
         self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
         self.facebook_chrome.login_facebook()
         self.dict_util = DictUtils()
+        self.facebook_util = FacebookUtils()
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
         task = json.loads(response.meta['task'])
+        self.facebook_util.update_current_user_status(task, 1)
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
         over_data = {
             'homepage': "https://www.facebook.com/{}".format(task['raw']['username']),
@@ -87,6 +90,8 @@ class FacebookUserSpider(RedisSpider):
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
+        # 更新当前被采集对象为完成
+        self.facebook_util.update_current_user_status(task, 2)
         del task['current_url_index']
         self.task_manage.del_item("mirror:" + self.name, json.dumps(task))
 

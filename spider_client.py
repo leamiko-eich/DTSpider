@@ -16,17 +16,17 @@ from scrapy.cmdline import execute
 
 
 class SpiderClient:
-    def run_facebook(self, **kwargs):
+    @staticmethod
+    def run_facebook(**kwargs):
         mode = kwargs.get('mode', '')
         account_id = kwargs.get('account_id', '')
         code = kwargs.get('code', '')
         group_id = kwargs.get('group_id', '')
-        instance_id = kwargs.get('instance_id', '')
-        if not (mode and account_id and code and group_id and instance_id):
+        if not (mode and account_id and group_id):
             return
 
         # 添加任务
-        spider_name = FacebookTask().add_task_from_msyql(mode, account_id, code, group_id, instance_id)
+        spider_name = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
         # 开启爬虫
         execute(('scrapy crawl ' + spider_name).split())
 
@@ -42,7 +42,8 @@ class SpiderClient:
         return json.loads(data)
 
     def main(self):
-        confs = self.read_settings_file()
+        # confs = self.read_settings_file()
+        confs = self.get_settings_from_redis()
         # 将配置文件存入本地redis中做缓存
         OriginSettingsData().save_settings_data(confs)
         # 开始启动采集程序
@@ -50,5 +51,4 @@ class SpiderClient:
 
 
 if __name__ == '__main__':
-    a = SpiderClient().read_settings_file()
-    print(a)
+    SpiderClient().main()

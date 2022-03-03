@@ -13,7 +13,7 @@ from PatternSpider.models.redis_model import RedisModel
 
 
 class TaskManage(RedisModel):
-    CLIENTNAME = 'REDIS_BT_RESOURCE'
+    CLIENTNAME = 'REDIS_DT'
     NAME = ''
 
     def write_task(self, url, raw, spider_name, score=1000):
@@ -34,3 +34,12 @@ class TaskManage(RedisModel):
             assert type(other_raw) == dict
             raw.update(other_raw)
         self.write_task(url=url, raw=raw, spider_name=spider_name, score=kwargs.get('priority', 1000))
+
+    def get_mirror_task(self, spider_name):
+        redis_key = 'mirror:' + spider_name
+        return self.zset_get_all(redis_key)
+
+
+if __name__ == '__main__':
+    a = TaskManage().get_mirror_task('facebook_user')
+    print(a)

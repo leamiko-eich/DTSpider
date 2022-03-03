@@ -12,6 +12,8 @@ import threading
 import time
 from PatternSpider.utils.dict_utils import DictUtils
 from PatternSpider.utils.time_utils import datetime_to_timestamp
+from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser
+from PatternSpider.models.mysql_model import TableFBOncePublic
 
 
 class FacebookUtils:
@@ -116,3 +118,61 @@ class FacebookUtils:
                     "caption": caption if caption else ''
                 })
         return attach_list
+
+    @staticmethod
+    def get_table_from_task(mode, type=None, is_public=None):
+        """
+        :param mode: once or daily
+        :param type: 历史采集的类型 1，2，3，4，5，6
+        :param is_public: 是否时公共账号
+        :return: 表对象，可直接对表操作
+        """
+        if mode == 'once':
+            # 基于用户的采集
+            if type in [1, 2, 3]:
+                table = TableFBOncePublic() if is_public else TableFBOnceUser()
+            # 基于帖子的采集
+            else:
+                assert type in [4, 5, 6]
+                table = TableFBPost()
+        else:
+            table = TableFBDailyUser()
+        return table
+
+    def update_status(self, mode, table_id, type, is_public, spider_status):
+        """
+        :param mode:   once or daily
+        :param table_id:  被采集表内的字段 id
+        :param type:   历史采集的类型 1，2，3，4，5，6
+        :param is_public: 是否时公共账号
+        :param spider_status: 当前被采集账号的采集状态
+        :return: True
+        """
+        task_type_mapping = {
+            1: "fd_status", 2: "ui_status", 3: "tl_status", 4: "c_status", 5: "l_status", 6: "s_status"
+        }
+        # 获取原始数据，并更新当前被采集用户的采集结果
+        # mode userid / once:type,ispublic
+        # 任务相关
+        table = self.get_table_from_task(mode, type, is_public)
+        if mode == 'once':
+            table.update_one(
+                {'id': table_id},
+                {task_type_mapping[type]: spider_status}
+            )
+        else:
+            table.update_one(
+                {'id': table_id},
+                {'crawl_status': spider_status}
+            )
+        return True
+
+    def update_current_user_status(self, task, spider_status):
+        total_task_infos = task['raw']['total_task_infos']
+        mode = total_task_infos['mode']
+        table_id = total_task_infos['user_info']['id'] if 'user_info' in total_task_infos else \
+            total_task_infos['post_info']['id']
+        task_info = total_task_infos['task_info'] if mode == 'once' else {}
+        type = task_info['type'] if task_info else None
+        is_public = task_info['is_public'] if task_info else None
+        return self.update_status(mode, table_id, type, is_public, spider_status)

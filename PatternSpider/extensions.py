@@ -11,10 +11,15 @@
 # -*- coding: utf-8 -*-
 
 # Define here the models for your scraped Extensions
+import json
+
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
+from PatternSpider.models.mysql_model import TableFBInstance, TableFBAccount
 from PatternSpider.models.redis_model import OriginSettingsData
-from PatternSpider.models.mysql_model import TableFBInstance
+from PatternSpider.utils.local_utils import get_outer_host_ip
+from PatternSpider.tasks import TaskManage
+from PatternSpider.spiders.facebook import FacebookUtils
 
 
 class RedisSpiderSmartIdleClosedExensions(object):
@@ -24,8 +29,11 @@ class RedisSpiderSmartIdleClosedExensions(object):
         self.idle_number = idle_number
         self.idle_list = []
         self.idle_count = 0
-        self.origin_settings_data = OriginSettingsData()
         self.fb_instance = TableFBInstance()
+        self.fb_account = TableFBAccount()
+        self.settings_data = OriginSettingsData()
+        self.task = TaskManage()
+        self.facebook_util = FacebookUtils()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -74,11 +82,23 @@ class RedisSpiderSmartIdleClosedExensions(object):
             self.idle_count = 0
 
         if self.idle_count > self.idle_number:
-            # 获取当前机器实例id，并更新数据库状态为3
-            origin_confs = self.origin_settings_data.get_settings_data()
-            instance_id = origin_confs['instance_id']
-            self.fb_instance.update_status(instance_id=instance_id, value=3)
             # 关闭当前chrome驱动
             spider.facebook_chrome.driver.quit()
+
+            # 账号rank+1,daily_use_count+1
+            settings_data = self.settings_data.get_settings_data()
+            self.fb_account.update_one(
+                {'id': settings_data['account_id']},
+                {'account_rank': 'account_rank+1', 'daily_use_count': 'daily_use_count+1'}
+            )
+            # 失败任务修改任务状态为
+            faileds_tasks = self.task.get_mirror_task(spider.name)
+            for faileds_task in faileds_tasks:
+                self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
+
+            # 获取当前机器实例id，并更新数据库状态为3
+            eip_address = get_outer_host_ip()
+            self.fb_instance.update_status(eip_address=eip_address, value=3)
+
             # 执行关闭爬虫操作
             self.crawler.engine.close_spider(spider, 'Waiting time exceeded')

@@ -474,8 +474,8 @@ class TableFBInstance(MysqlModel):
     CLIENTNAME = 'MYSQL_DT'
     DATABASE = 'social_data'
     COLL = 'fb_instance'
-    UNIONFILED = 'instance_id'
+    UNIONFILED = 'eip_address'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
 
-    def update_status(self, instance_id, value: int):
-        return self.update_one({self.UNIONFILED: instance_id}, {'status': value})
+    def update_status(self, eip_address, value: int):
+        return self.update_one({"eip_address": eip_address}, {'status': value})
