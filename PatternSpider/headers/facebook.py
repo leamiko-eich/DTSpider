@@ -21,6 +21,8 @@ class FacebookUserSpider(FacebookBase):
     name = SpiderNames.facebook_user
 
     def get_url(self, **kwargs):
+        if "profile.php" in kwargs['username']:
+            return "https://www.facebook.com/{}&sk=about".format(kwargs['username'])
         return self.Uri.format(kwargs['username'])
 
 
@@ -29,6 +31,8 @@ class FacebookUserFriendsSpider(FacebookBase):
     name = SpiderNames.facebook_user_friends
 
     def get_url(self, **kwargs):
+        if "profile.php" in kwargs['username']:
+            return "https://www.facebook.com/{}&sk=friends".format(kwargs['username'])
         return self.Uri.format(kwargs['username'])
 
 
@@ -46,11 +50,13 @@ class FacebookPostLikeSpider(FacebookBase):
     def get_url(self, **kwargs):
         return kwargs['post_url']
 
+
 class FacebookPostShareSpider(FacebookBase):
     name = SpiderNames.facebook_post_share
 
     def get_url(self, **kwargs):
         return kwargs['post_url']
+
 
 class FacebookPostCommentSpider(FacebookBase):
     name = SpiderNames.facebook_post_comment

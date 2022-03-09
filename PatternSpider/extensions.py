@@ -81,23 +81,37 @@ class RedisSpiderSmartIdleClosedExensions(object):
         else:
             self.idle_count = 0
 
-        if self.idle_count > self.idle_number:
+        if self.idle_count > self.idle_number or not spider.login_data['login_res']:
             # 关闭当前chrome驱动
             spider.facebook_chrome.driver.quit()
-
-            # 账号rank+1,daily_use_count+1
-            settings_data = self.settings_data.get_settings_data()
-            self.fb_account.update_one(
-                {'id': settings_data['account_id']},
-                {'account_rank': 'account_rank+1', 'daily_use_count': 'daily_use_count+1'}
-            )
-            # 失败任务修改任务状态为
-            faileds_tasks = self.task.get_mirror_task(spider.name)
-            for faileds_task in faileds_tasks:
-                self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
+            if not spider.login_data['login_res']:
+                # 修改账号状态
+                settings_data = self.settings_data.get_settings_data()
+                self.fb_account.update_one(
+                    {'id': settings_data['account_id']},
+                    {'status': spider.login_data['account_status']}
+                )
+            else:
+                # 账号rank+1,daily_use_count+1
+                settings_data = self.settings_data.get_settings_data()
+                account_info = self.fb_account.find({'id': settings_data['account_id']}, 1)
+                account_info['daily_use_count'] = account_info['daily_use_count'] if account_info[
+                    'daily_use_count'] else 0
+                account_info['account_rank'] = account_info['account_rank'] if account_info['account_rank'] else 0
+                account_rank = account_info['account_rank'] + 1
+                daily_use_count = account_info['daily_use_count'] + 1
+                self.fb_account.update_one(
+                    {'id': settings_data['account_id']},
+                    {'account_rank': account_rank, 'daily_use_count': daily_use_count}
+                )
+                # 失败任务修改任务状态为
+                faileds_tasks = self.task.get_mirror_task(spider.name)
+                for faileds_task in faileds_tasks:
+                    self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
 
             # 获取当前机器实例id，并更新数据库状态为3
             eip_address = get_outer_host_ip()
+            print(eip_address)
             self.fb_instance.update_status(eip_address=eip_address, value=3)
 
             # 执行关闭爬虫操作

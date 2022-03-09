@@ -10,8 +10,8 @@
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 from PatternSpider.tasks import TaskManage
 from PatternSpider.settings.spider_names import SpiderNames
-from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBOnceUser, TableFBTask, TableFBAccount
-from PatternSpider.models.mysql_model import TableFBPost, TableFBDailyUser
+from PatternSpider.models.mysql_model import TableFBTask, TableFBAccount
+from PatternSpider.models.mysql_model import TableFBDailyUser
 from PatternSpider.cookies_manage.facebook_cookies import FacebookCookies
 from PatternSpider.spiders.facebook import FacebookUtils
 
@@ -26,10 +26,12 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', {})
         for user_info in user_infos:
+            # del user_info['created_time']
+            # del user_info['updated_time']
             total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user,
-                username=user_info['name'],
+                username=user_info['homepage'].replace("https://www.facebook.com/", ''),
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user
@@ -41,13 +43,15 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', '')
         for user_info in user_infos:
+            del user_info['created_time']
+            del user_info['updated_time']
             total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user_friends,
                 source_userid=user_info['userid'],
                 source_homepage=user_info['homepage'],
-                username=user_info['name'],
-                limit_count=user_info.get('limit_count', -1),
+                username=user_info['homepage'].replace('https://www.facebook.com/', ''),
+                limit_count=user_info.get('limit_count', 500),
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user_friends
@@ -59,13 +63,16 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', {})
         for user_info in user_infos:
+            del user_info['created_time']
+            del user_info['updated_time']
             total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user_guess,
                 name=user_info['name'],
+                username=user_info['homepage'].replace('https://www.facebook.com/', ''),
                 userid=user_info['userid'],
                 homepage=user_info['homepage'],
-                limit_count=-1,
+                limit_count=500,
                 limit_day=total_task_infos['task_info']['day_length'],
                 total_task_infos=total_task_infos
             )
@@ -78,12 +85,14 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            del post['created_time']
+            del post['updated_time']
             total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_like,
-                post_url=post['post_url'],
+                post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=-1,
+                limit_count=500,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_like
@@ -95,12 +104,14 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            del post['created_time']
+            del post['updated_time']
             total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_share,
-                post_url=post['post_url'],
+                post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=-1,
+                limit_count=500,
                 total_task_infos=total_task_infos
             )
 
@@ -113,12 +124,14 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', '')
         for post in posts:
+            del post['created_time']
+            del post['updated_time']
             total_task_infos['post_info'] = post
             self.write_task_from_spider_name(
                 SpiderNames.facebook_post_comment,
-                post_url=post['post_url'],
+                post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=-1,
+                limit_count=500,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_comment
@@ -142,6 +155,8 @@ class FacebookTask(TaskManage):
         if mode == "once":
             fb_task = TableFBTask()
             task_info = fb_task.find({'code': code}, 1)
+            del task_info['created_time']
+            del task_info['updated_time']
             total_task_infos['task_info'] = task_info
             # 采集类型
             spider_type = int(task_info['type'])
@@ -195,3 +210,17 @@ class FacebookTask(TaskManage):
                 total_task_infos=total_task_infos
             )
         return spider_name
+
+
+if __name__ == '__main__':
+    user_infos = [
+        {"homepage": "https://www.facebook.com/jaleel.daniels"},
+        {"homepage": "https://www.facebook.com/donte.gordon.71"},
+        {"homepage": "https://www.facebook.com/profile.php?id=100011746563640"},
+        {"homepage": "https://www.facebook.com/patrick.tembreull"},
+        {"homepage": "https://www.facebook.com/nathan.cohen.165"},
+        {"homepage": "https://www.facebook.com/joseph.ellul.90"},
+        {"homepage": "https://www.facebook.com/tyler.ward.3551380"},
+        {"homepage": "https://www.facebook.com/lucas.fraustfro"},
+    ]
+    FacebookTask().add_facebook_user_task(user_infos)

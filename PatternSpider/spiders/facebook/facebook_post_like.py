@@ -9,6 +9,7 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
+import time
 import urllib.parse
 
 import scrapy
@@ -40,9 +41,16 @@ class FacebookPostLikeSpider(RedisSpider):
         # 创建driver
         super(FacebookPostLikeSpider, self).__init__(name=self.name)
         self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
-        self.facebook_chrome.login_facebook()
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        login_res, account_status = self.facebook_chrome.login_facebook()
+        # 登录失败的话，关闭爬虫
+        self.login_data = {
+            'login_res': login_res,
+            'account_status': account_status
+        }
+        print(self.login_data)
+        time.sleep(10)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
@@ -116,8 +124,8 @@ class FacebookPostLikeSpider(RedisSpider):
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, 2)
-        del task['current_url_index']
-        self.task_manage.del_item("mirror:" + self.name, json.dumps(task))
+        orgin_task = {'url': task['url'], 'raw': task['raw']}
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 
 
 if __name__ == '__main__':

@@ -180,12 +180,15 @@ class BaseChrome(BaseSelenium):
             ActionChains(self.driver).send_keys(Keys.TAB * int(task['need_tab'])).perform()
             time.sleep(2)
 
-        down_num = int(task['down_num']) if 'down_num' in task else 30
+        down_num = int(task['down_num']) if 'down_num' in task else 5
         actions = ActionChains(self.driver)
-        actions.send_keys(Keys.DOWN * 5)
+        actions.send_keys(Keys.DOWN * random.randint(5, 10))
+        actions.send_keys(Keys.UP * random.randint(1, 3))
+        actions.send_keys(Keys.DOWN * random.randint(5, 10))
+        actions.send_keys(Keys.UP * random.randint(1, 3))
         for i in range(down_num):
             actions.perform()
-            time.sleep(round(random.uniform(0.1, 0.5), 3))
+            time.sleep(round(random.uniform(1.3, 1.9), 3))
 
     def scroll_is_over(self):
         check_height = self.driver.execute_script("return document.body.scrollHeight;")  # 当前滚动条的高度
@@ -245,21 +248,31 @@ class FacebookChrome(BaseChrome):
         except Exception as e:
             self.logger.error(str(e))
             self.logger.error("请手动在浏览器上输入地址：http://2fa.live/tok/{},并在控制台输入code".format(self.key))
-            token = input('请输入token：')
+            token = None
         return token
 
     def check_login(self):
         """
         :return: bool值 检测当前浏览器是否登录成功
+        "Help us confirm it's you"    5
+        "Your account has been disabled"    -1
+        2：临时受限，
+        3：锁定（locked），
+        4：出错（Error）
         """
         try:
+            if "Help us confirm it's you" in self.driver.page_source:
+                return False, 5
+            if "Your account has been disabled" in self.driver.page_source:
+                return False, -1
+
             login_name = self.driver.find_element_by_xpath(
                 '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
             self.logger.info("登录成功：{}".format(login_name))
-            return True
+            return True, 0
         except Exception as e:
-            self.logger.error('登录失败，请确认。error:{}'.format(e))
-            return False
+            self.logger.error('登录失败，请确认。account:{}'.format(self.account))
+            return False, 4
 
     def login_facebook(self):
         """
@@ -364,8 +377,12 @@ class FacebookChrome(BaseChrome):
         # 切换到该页面
         self.get_handle(handle_index=handle_index)
         # 等待页面加载结束之后 返回页面源码
-        Wait(self.driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//h1[@class="gmql0nx0 l94mrbxd p1ri9a11 lzcic4wl"]')))
+        try:
+            Wait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//h1[@class="gmql0nx0 l94mrbxd p1ri9a11 lzcic4wl"]')))
+        except:
+            pass
+        time.sleep(3)
         return self.driver.page_source
 
     def get_page_source_like(self, handle_index):
@@ -380,9 +397,12 @@ class FacebookChrome(BaseChrome):
     def get_page_source_share(self, handle_index):
         # 切换到该页面
         self.get_handle(handle_index=handle_index)
-        Wait(self.driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//div[@class="gtad4xkn"]')))
-        self.driver.find_elements_by_xpath('//div[@class="gtad4xkn"]')[2].click()
+        try:
+            Wait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//div[@class="gtad4xkn"]')))
+            self.driver.find_elements_by_xpath('//div[@class="gtad4xkn"]')[2].click()
+        except Exception as e:
+            print(e)
         time.sleep(5)
 
 

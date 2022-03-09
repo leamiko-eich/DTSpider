@@ -10,10 +10,13 @@
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import threading
 import time
+import sys
+from PatternSpider.models.redis_model import OriginSettingsData
 from PatternSpider.utils.dict_utils import DictUtils
+from PatternSpider.utils.local_utils import get_outer_host_ip
 from PatternSpider.utils.time_utils import datetime_to_timestamp
-from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser
-from PatternSpider.models.mysql_model import TableFBOncePublic
+from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser, TableFBInstance
+from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBAccount
 
 
 class FacebookUtils:
@@ -21,6 +24,9 @@ class FacebookUtils:
 
     def __init__(self):
         self.dict_util = DictUtils()
+        self.settings_data = OriginSettingsData()
+        self.fb_account = TableFBAccount()
+        self.fb_instance = TableFBInstance()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):

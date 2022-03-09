@@ -10,6 +10,8 @@
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
 import re
+import time
+
 import scrapy
 
 from PatternSpider.scrapy_redis.spiders import RedisSpider
@@ -40,9 +42,16 @@ class FacebookUserGuessSpider(RedisSpider):
         # 创建driver
         super(FacebookUserGuessSpider, self).__init__(name=self.name)
         self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
-        self.facebook_chrome.login_facebook()
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        login_res, account_status = self.facebook_chrome.login_facebook()
+        # 登录失败的话，关闭爬虫
+        self.login_data = {
+            'login_res': login_res,
+            'account_status': account_status
+        }
+        print(self.login_data)
+        time.sleep(10)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
@@ -67,7 +76,7 @@ class FacebookUserGuessSpider(RedisSpider):
             timeline_list_feed_units = self.dict_util.get_data_from_field(bbox, 'timeline_list_feed_units')
             if timeline_list_feed_units:
                 guess_nodes.append(timeline_list_feed_units['edges'][0]['node'])
-        guesses_data, request = self.parse_guess(response, guess_nodes, task)
+        guesses_data, request = self.parse_guess(response, guess_nodes, task, True)
         for guess in guesses_data:
             yield guess
         yield request if request else self.close_current_task(task)
@@ -102,7 +111,7 @@ class FacebookUserGuessSpider(RedisSpider):
             yield guess
         yield request if request else self.close_current_task(task)
 
-    def parse_guess(self, response, guess_nodes, task):
+    def parse_guess(self, response, guess_nodes, task, enforce_next=False):
         # 解析数据：
         creation_time = -1
         over_datas = []
@@ -173,6 +182,7 @@ class FacebookUserGuessSpider(RedisSpider):
 
         # 下一页请求判断
         is_next, task = self.facebook_util.is_next_request(task, len(over_datas), creation_time=creation_time)
+        is_next = True if enforce_next else is_next
         self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
         if is_next:
             request = scrapy.Request(
@@ -221,7 +231,7 @@ class FacebookUserGuessSpider(RedisSpider):
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, 2)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
-        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task))
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 
 
 if __name__ == '__main__':

@@ -41,10 +41,17 @@ class FacebookPostCommentSpider(RedisSpider):
     def __init__(self):
         # 创建driver
         super(FacebookPostCommentSpider, self).__init__(name=self.name)
-        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
-        self.facebook_chrome.login_facebook()
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
+        login_res, account_status = self.facebook_chrome.login_facebook()
+        # 登录失败的话，关闭爬虫
+        self.login_data = {
+            'login_res': login_res,
+            'account_status': account_status
+        }
+        print(self.login_data)
+        time.sleep(10)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
@@ -172,16 +179,22 @@ class FacebookPostCommentSpider(RedisSpider):
             "//span[@class='d2edcug0 hpfvmrgz qv66sw1b c1et5uql oi732d6d ik7dh3pa ht8s03o8 a8c37x1j fe6kdd0r mau55g9w c8b282yb keod5gw0 nxhoafnm aigsh9s9 d3f4x2em iv3no6db jq4qci2q a3bd9o3v lrazzd5p m9osqain']")
         print(look_mores)
         for look_more in look_mores:
-            if look_more.text == "查看更多留言":
+            if look_more.text == "查看更多留言" or "檢視另" in look_more.text:
                 self.make_element_into_view(look_more)
                 look_more.click()
+                try:
+                    comment_position = self.facebook_chrome.driver.find_element_by_xpath(
+                        "//div[@class='rj1gh0hx buofh1pr ni8dbmo4 stjgntxs hv4rvrfc']")
+                    comment_position.click() if comment_position else None
+                except:
+                    pass
                 return True
         return False
 
     def make_element_into_view(self, element):
         location_y = element.location_once_scrolled_into_view['y']
-        while location_y == 0 or location_y > 500:
-            if location_y == 0:
+        while location_y < 100 or location_y > 500:
+            if location_y < 100:
                 self.facebook_chrome.scroll_up()
             elif location_y > 500:
                 self.facebook_chrome.scroll_down()
@@ -197,7 +210,7 @@ class FacebookPostCommentSpider(RedisSpider):
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, 2)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
-        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task))
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 
 
 if __name__ == '__main__':

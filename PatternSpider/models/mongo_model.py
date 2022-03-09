@@ -20,7 +20,8 @@ class MongoModel:
     name = ''
 
     def __init__(self):
-        self.db = LinkManege().get_mongo_db(self.CLIENTNAME)[self.DATABASE]
+        client = LinkManege().get_mongo_db(self.CLIENTNAME)
+        self.db = client[self.DATABASE]
         self.coll = self.db[self.COLL]
 
     def find(self, query):
@@ -145,6 +146,7 @@ class MongoFacebookPostShare(MongoModel):
             'userid': item['userid'],
         }
         self.save_one_item(item, filter_coll)
+
 
 class MongoFacebookPostComment(MongoModel):
     CLIENTNAME = 'MONGO_DT'

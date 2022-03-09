@@ -142,13 +142,9 @@ class LinkManege(object):
     # 获取mongo连接
     def __mongo_client(self, client_name):
         db_config = self.settings.get(client_name)
-        if db_config['user']:
-            mongo_str = "mongodb://%s:%s@%s:%s" % (
-                db_config["user"], db_config["pwd"], db_config["host"], db_config['port'])
-        else:
-            mongo_str = "mongodb://%s" % (db_config["addr"])
-
+        mongo_str = "mongodb://%s:%s/" % (db_config["host"], db_config['port'])
         client = MongoClient(mongo_str, connect=False)
+        client.admin.authenticate(db_config["user"], db_config["pwd"], mechanism='SCRAM-SHA-1')
         self.__set_db_pool(client_name, client)
         return client
 
@@ -157,7 +153,7 @@ class LinkManege(object):
         client = self.__get_db_pool(client_name)
         if client != {}:
             try:
-                client.get_database("spider_server")
+                client.get_database("admin")
             except Exception as e:
                 print(e)
                 client = self.__mongo_client(client_name)

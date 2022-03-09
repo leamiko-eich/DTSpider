@@ -20,6 +20,8 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
+import time
+
 import scrapy
 
 from PatternSpider.scrapy_redis.spiders import RedisSpider
@@ -50,9 +52,16 @@ class FacebookPostShareSpider(RedisSpider):
         # 创建driver
         super(FacebookPostShareSpider, self).__init__(name=self.name)
         self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
-        self.facebook_chrome.login_facebook()
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        login_res, account_status = self.facebook_chrome.login_facebook()
+        # 登录失败的话，关闭爬虫
+        self.login_data = {
+            'login_res': login_res,
+            'account_status': account_status
+        }
+        print(self.login_data)
+        time.sleep(10)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
@@ -61,7 +70,6 @@ class FacebookPostShareSpider(RedisSpider):
         self.facebook_util.update_current_user_status(task, 1)
         self.facebook_chrome.get_page_source_share(task['current_url_index'])
         task['need_tab'] = 2
-        # 聚焦弹窗
         yield scrapy.Request(
             response.request.url,
             callback=self.parse_graphql,  # 处理响应的回调函数。
@@ -73,6 +81,7 @@ class FacebookPostShareSpider(RedisSpider):
     def parse_graphql(self, response):
         task = json.loads(response.meta['task'])
         self.facebook_chrome.get_handle(task['current_url_index'])
+        time.sleep(3)
         graphql_datas = self.facebook_chrome.get_graphql_data()
 
         share_datas = []
@@ -91,24 +100,29 @@ class FacebookPostShareSpider(RedisSpider):
         # 解析数据相关：
         over_datas = []
         for share_data in share_datas:
+            share_data = json.loads(json.dumps(share_data).replace('.', ''))
             reshares = self.dict_util.get_data_from_field(share_data, 'reshares')
             comet_sections = self.dict_util.get_data_from_field(reshares, 'comet_sections')
+            if not comet_sections:
+                continue
             user_data = self.dict_util.get_data_from_field(comet_sections['context_layout'], 'comet_sections')
             user = self.dict_util.get_data_from_field(user_data, '__typename', 'User')
-            creation_time = self.dict_util.get_data_from_field(user_data, 'creation_time')
+            user = user if user else self.dict_util.get_data_from_field(user_data, '__typename', 'Page')
             if not user:
                 continue
 
-            user.update({
+            creation_time = self.dict_util.get_data_from_field(user_data, 'creation_time')
+            share_data.update({
                 "post_id": task['raw']['post_id'],
                 "post_url": task['raw']['post_url'],
-                "userid": user.get('id', 0),
+                "userid": user.get('id', -1),
                 "username": user.get('name', ''),
                 "homepage": user.get('url', ''),
                 "share_time": timestamp_to_datetime(creation_time) if creation_time else timestamp_to_datetime(0),
-
             })
-            over_datas.append(user)
+            if share_data['userid'] == -1:
+                continue
+            over_datas.append(share_data)
 
         # 分析下一次请求相关：
         if 'need_tab' in task:
@@ -133,8 +147,8 @@ class FacebookPostShareSpider(RedisSpider):
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, 2)
-        del task['current_url_index']
-        self.task_manage.del_item("mirror:" + self.name, json.dumps(task))
+        orgin_task = {'url': task['url'], 'raw': task['raw']}
+        self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 
 
 if __name__ == '__main__':
