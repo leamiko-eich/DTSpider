@@ -13,7 +13,6 @@ import json
 from PatternSpider.models.redis_model import OriginSettingsData, DistributedSettings
 from PatternSpider.tasks.facebook import FacebookTask
 from scrapy.cmdline import execute
-from PatternSpider.servers.ding_talk_server import DingTalk
 
 
 class SpiderClient:
@@ -29,7 +28,7 @@ class SpiderClient:
         # 添加任务
         spider_name = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
         # 开启爬虫
-        # execute(('scrapy crawl ' + spider_name).split())
+        execute(('scrapy crawl ' + spider_name).split())
 
     @staticmethod
     def read_settings_file():
@@ -43,8 +42,8 @@ class SpiderClient:
         return json.loads(data)
 
     def main(self):
-        confs = self.read_settings_file()
-        # confs = self.get_settings_from_redis()
+        # confs = self.read_settings_file()
+        confs = self.get_settings_from_redis()
         # 将配置文件存入本地redis中做缓存
         OriginSettingsData().save_settings_data(confs)
         # 开始启动采集程序
