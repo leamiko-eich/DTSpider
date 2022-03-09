@@ -59,6 +59,10 @@ class FacebookUserFriendsSpider(RedisSpider):
         self.facebook_util.update_current_user_status(task, 1)
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        # 加一个访问当前主页的状态，如果当前页无法访问直接结束
+        result = self.facebook_util.check_pagesource(page_source)
+        if not result:
+            return self.close_current_task(task, 4)
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
         if bboxes:
@@ -129,12 +133,12 @@ class FacebookUserFriendsSpider(RedisSpider):
         return over_datas, request
 
     @ding_alarm("spiders", name, logger)
-    def close_current_task(self, task):
+    def close_current_task(self, task, task_status=2):
+        # 更新当前被采集对象为完成
+        self.facebook_util.update_current_user_status(task, task_status)
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
-        # 更新当前被采集对象为完成
-        self.facebook_util.update_current_user_status(task, 2)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 

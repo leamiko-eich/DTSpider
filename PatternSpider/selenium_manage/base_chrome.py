@@ -254,24 +254,28 @@ class FacebookChrome(BaseChrome):
     def check_login(self):
         """
         :return: bool值 检测当前浏览器是否登录成功
-        "Help us confirm it's you"    5
+
+        账号状态，-1：被封（blocked），0：可用，1：备用，2：临时受限，3：锁定（locked），4：出错（Error） 5:需要验证
         "Your account has been disabled"    -1
-        2：临时受限，
-        3：锁定（locked），
-        4：出错（Error）
+        login successful 0
+        You're Temporarily Blocked 3
+        login failed  4
+        "Help us confirm it's you"    5
         """
         try:
             if "Help us confirm it's you" in self.driver.page_source:
                 return False, 5
             if "Your account has been disabled" in self.driver.page_source:
                 return False, -1
+            if "You're Temporarily Blocked" in self.driver.page_source or "You're temporarily blocked" in self.driver.page_source:
+                return False, 3
 
             login_name = self.driver.find_element_by_xpath(
                 '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
             self.logger.info("登录成功：{}".format(login_name))
             return True, 0
         except Exception as e:
-            self.logger.error('登录失败，请确认。account:{}'.format(self.account))
+            self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
             return False, 4
 
     def login_facebook(self):
@@ -393,6 +397,7 @@ class FacebookChrome(BaseChrome):
             EC.presence_of_element_located((By.XPATH, '//span[@class="pcp91wgn"]')))
         self.driver.find_element_by_xpath('//span[@class="pcp91wgn"]').click()
         time.sleep(5)
+        return self.driver.page_source
 
     def get_page_source_share(self, handle_index):
         # 切换到该页面
@@ -404,6 +409,7 @@ class FacebookChrome(BaseChrome):
         except Exception as e:
             print(e)
         time.sleep(5)
+        return self.driver.page_source
 
 
 if __name__ == '__main__':

@@ -110,6 +110,7 @@ class FacebookPostCommentSpider(RedisSpider):
         comments_count = -1
         # 解析数据
         over_datas = []
+        comment_date = -1
         for comments_data in comments_datas:
             display_comments = self.dict_util.get_data_from_field(comments_data, 'display_comments')
             if not display_comments:
@@ -136,9 +137,12 @@ class FacebookPostCommentSpider(RedisSpider):
                         'created_time'] else timestamp_to_datetime(0),
                 })
                 over_datas.append(node)
+                comment_date = node['comment_time'] if node['comment_time'] != timestamp_to_datetime(0) else -1
 
         # 下一次请求策略
-        is_next, task = self.facebook_util.is_next_request(task, len(over_datas), feed_count=comments_count)
+        is_next, task = self.facebook_util.is_next_request(
+            task, len(over_datas), feed_count=comments_count, creation_time=comment_date
+        )
         self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
         if is_next:
             request = scrapy.Request(

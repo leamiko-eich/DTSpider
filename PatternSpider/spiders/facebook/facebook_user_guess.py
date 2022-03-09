@@ -60,6 +60,11 @@ class FacebookUserGuessSpider(RedisSpider):
         self.facebook_util.update_current_user_status(task, 1)
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        # 加一个访问当前主页的状态，如果当前页无法访问直接结束
+        result = self.facebook_util.check_pagesource(page_source)
+        if not result:
+            return self.close_current_task(task, 4)
+
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
         if not bboxes:
@@ -221,15 +226,16 @@ class FacebookUserGuessSpider(RedisSpider):
             )
         return {}
 
-    def close_current_task(self, task):
+    def close_current_task(self, task, task_status=2):
         """
         :param task: 请求头中配置的任务参数
+        :param task_status: 当前被采集对象的采集结果 2 成功 3 采集失败 4 访问失败
         """
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
-        self.facebook_util.update_current_user_status(task, 2)
+        self.facebook_util.update_current_user_status(task, task_status)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 

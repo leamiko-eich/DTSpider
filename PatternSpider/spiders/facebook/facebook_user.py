@@ -55,51 +55,57 @@ class FacebookUserSpider(RedisSpider):
         task = json.loads(response.meta['task'])
         self.facebook_util.update_current_user_status(task, 1)
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
-        over_data = {
-            'homepage': "https://www.facebook.com/{}".format(task['raw']['username']),
-            'jumpname': task['raw']['username']
-        }
-        re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
-        bboxes = re.findall(re_pattern, page_source)
-        for box in bboxes:
-            if 'profile_social_context' in box:
-                user = self.dict_util.get_data_from_field(json.loads(box), '__isProfile', 'User')
-                friends_count = self.dict_util.get_data_from_field(user['profile_social_context'], 'text')
-                friends_count = friends_count['text'] if type(friends_count) == dict else friends_count
-                over_data.update({
-                    'userid': user['id'],
-                    'name': user['name'],
-                    'avatar': user['profilePicLarge']['uri'],
-                    'gender': user['gender'],
-                    'friends_count': friends_count,
-                })
-            if 'field_type' in box:
-                profile_fields = self.dict_util.get_data_from_field(json.loads(box), 'profile_fields')
-                work = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'work')
-                education = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'education')
-                current_city = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'current_city')
-                hometown = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'hometown')
-                relationship = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'relationship')
-                relationship_text_content = self.dict_util.get_data_from_field(relationship, 'text_content')
-                if relationship_text_content:
-                    relationship_text = relationship_text_content['text']
-                else:
-                    relationship_text = relationship['title']['text'] if relationship else ""
 
-                over_data.update({
-                    'work': work['title']['text'] if work else "",
-                    'education': education['title']['text'] if education else "",
-                    'current_city': current_city['title']['text'] if current_city else "",
-                    'hometown': hometown['title']['text'] if hometown else "",
-                    'relationship': relationship_text,
-                })
+        result = self.facebook_util.check_pagesource(page_source)
+        if result:
+            over_data = {
+                'homepage': "https://www.facebook.com/{}".format(task['raw']['username']),
+                'jumpname': task['raw']['username']
+            }
+            re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
+            bboxes = re.findall(re_pattern, page_source)
+            for box in bboxes:
+                if 'profile_social_context' in box:
+                    user = self.dict_util.get_data_from_field(json.loads(box), '__isProfile', 'User')
+                    friends_count = self.dict_util.get_data_from_field(user['profile_social_context'], 'text')
+                    friends_count = friends_count['text'] if type(friends_count) == dict else friends_count
+                    over_data.update({
+                        'userid': user['id'],
+                        'name': user['name'],
+                        'avatar': user['profilePicLarge']['uri'],
+                        'gender': user['gender'],
+                        'friends_count': friends_count,
+                    })
+                if 'field_type' in box:
+                    profile_fields = self.dict_util.get_data_from_field(json.loads(box), 'profile_fields')
+                    work = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'work')
+                    education = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'education')
+                    current_city = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'current_city')
+                    hometown = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'hometown')
+                    relationship = self.dict_util.get_data_from_field(profile_fields, 'field_type', 'relationship')
+                    relationship_text_content = self.dict_util.get_data_from_field(relationship, 'text_content')
+                    if relationship_text_content:
+                        relationship_text = relationship_text_content['text']
+                    else:
+                        relationship_text = relationship['title']['text'] if relationship else ""
 
-        yield over_data
+                    over_data.update({
+                        'work': work['title']['text'] if work else "",
+                        'education': education['title']['text'] if education else "",
+                        'current_city': current_city['title']['text'] if current_city else "",
+                        'hometown': hometown['title']['text'] if hometown else "",
+                        'relationship': relationship_text,
+                    })
+
+            yield over_data
+            # 更新当前被采集对象为完成
+            self.facebook_util.update_current_user_status(task, 2)
+        else:
+            # 更新当前被采集对象为完成
+            self.facebook_util.update_current_user_status(task, 4)
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
-        # 更新当前被采集对象为完成
-        self.facebook_util.update_current_user_status(task, 2)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 

@@ -57,7 +57,12 @@ class FacebookPostLikeSpider(RedisSpider):
         task = json.loads(response.meta['task'])
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
-        self.facebook_chrome.get_page_source_like(task['current_url_index'])
+        page_source = self.facebook_chrome.get_page_source_like(task['current_url_index'])
+        # 加一个访问当前主页的状态，如果当前页无法访问直接结束
+        result = self.facebook_util.check_pagesource(page_source)
+        if not result:
+            return self.close_current_page(task, 4)
+
         yield scrapy.Request(
             response.request.url,
             callback=self.parse_graphql,  # 处理响应的回调函数。
@@ -118,12 +123,12 @@ class FacebookPostLikeSpider(RedisSpider):
             request = None
         return over_datas, request
 
-    def close_current_page(self, task):
+    def close_current_page(self, task,task_status=2):
         # 关闭当前页
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
-        self.facebook_util.update_current_user_status(task, 2)
+        self.facebook_util.update_current_user_status(task, task_status)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
 
