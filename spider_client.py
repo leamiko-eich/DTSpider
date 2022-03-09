@@ -51,6 +51,4 @@ class SpiderClient:
 
 
 if __name__ == '__main__':
-    # ding = DingTalk()
-    # ding.send_msg("采集程序定时测试", atmobile='18731218157')
     SpiderClient().main()
