@@ -114,7 +114,11 @@ class BaseChrome(BaseSelenium):
         options = self.get_log_options(headless)
         desired_capabilities = self.get_caps()
         # 这里也可以对options和caps加入其他的参数，比如代理参数等
-        chrome = webdriver.Chrome(options=options, desired_capabilities=desired_capabilities)
+        chrome = webdriver.Chrome(
+            executable_path="chromedriver.exe",
+            options=options,
+            desired_capabilities=desired_capabilities
+        )
         return chrome
 
     def get_api_data(self, match_url):

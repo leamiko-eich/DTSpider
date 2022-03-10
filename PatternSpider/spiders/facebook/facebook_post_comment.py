@@ -43,7 +43,7 @@ class FacebookPostCommentSpider(RedisSpider):
         super(FacebookPostCommentSpider, self).__init__(name=self.name)
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
-        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=self.facebook_util.headless)
         login_res, account_status = self.facebook_chrome.login_facebook()
         # 登录失败的话，关闭爬虫
         self.login_data = {
@@ -106,6 +106,7 @@ class FacebookPostCommentSpider(RedisSpider):
             yield guess
         yield request if request else self.close_current_task(task)
 
+    @ding_alarm('spiders', name, logger)
     def parse_comment(self, response, comments_datas, task):
         comments_count = -1
         # 解析数据
@@ -155,6 +156,7 @@ class FacebookPostCommentSpider(RedisSpider):
             request = None
         return over_datas, request
 
+    @ding_alarm('spiders', name, logger)
     def go_comments_first(self):
         # 点击最相关：
         flag = False
@@ -177,6 +179,7 @@ class FacebookPostCommentSpider(RedisSpider):
                 return True
         return False
 
+    @ding_alarm('spiders', name, logger)
     def get_comments_more(self):
         # 点击查看更多
         look_mores = self.facebook_chrome.driver.find_elements_by_xpath(
@@ -195,6 +198,7 @@ class FacebookPostCommentSpider(RedisSpider):
                 return True
         return False
 
+    @ding_alarm('spiders', name, logger)
     def make_element_into_view(self, element):
         location_y = element.location_once_scrolled_into_view['y']
         while location_y < 100 or location_y > 500:

@@ -40,9 +40,9 @@ class FacebookPostLikeSpider(RedisSpider):
     def __init__(self):
         # 创建driver
         super(FacebookPostLikeSpider, self).__init__(name=self.name)
-        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=self.facebook_util.headless)
         login_res, account_status = self.facebook_chrome.login_facebook()
         # 登录失败的话，关闭爬虫
         self.login_data = {
@@ -90,6 +90,7 @@ class FacebookPostLikeSpider(RedisSpider):
             yield over_data
         yield request if request else self.close_current_page(task)
 
+    @ding_alarm('spiders', name, logger)
     def parse_like_user(self, response, task, like_datas):
         # 解析数据相关：
         over_datas = []

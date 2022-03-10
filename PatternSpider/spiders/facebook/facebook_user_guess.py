@@ -41,9 +41,9 @@ class FacebookUserGuessSpider(RedisSpider):
     def __init__(self):
         # 创建driver
         super(FacebookUserGuessSpider, self).__init__(name=self.name)
-        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=False)
         self.dict_util = DictUtils()
         self.facebook_util = FacebookUtils()
+        self.facebook_chrome = FacebookChrome(logger=self.logger, headless=self.facebook_util.headless)
         login_res, account_status = self.facebook_chrome.login_facebook()
         # 登录失败的话，关闭爬虫
         self.login_data = {
@@ -116,6 +116,7 @@ class FacebookUserGuessSpider(RedisSpider):
             yield guess
         yield request if request else self.close_current_task(task)
 
+    @ding_alarm('spiders', name, logger)
     def parse_guess(self, response, guess_nodes, task, enforce_next=False):
         # 解析数据：
         creation_time = -1
@@ -200,6 +201,7 @@ class FacebookUserGuessSpider(RedisSpider):
             request = None
         return over_datas, request
 
+    @ding_alarm('spiders', name, logger)
     def parse_share_guess(self, attached_story_user, attached_story_attachment):
         if attached_story_user and attached_story_attachment:
             user = self.dict_util.get_data_from_field(attached_story_user, '__typename', 'User')
