@@ -31,6 +31,8 @@ IDLE_NUMBER = 60  # 配置允许的空闲时长，每5秒会增加一次IDLE_NUM
 EXTENSIONS = {
     'PatternSpider.extensions.RedisSpiderSmartIdleClosedExensions': 100,
 }
+# ==================日志相关==========================================================================
+LOG_LEVEL = 'INFO'
 
 # ===scrapy_redis 读取的redis地址  task模块使用此连接地址，因为要保持一致=======================================
 REDIS_URL = "redis://:@127.0.0.1:6379"

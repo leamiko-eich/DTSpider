@@ -21,7 +21,7 @@ def get_logger(logger_name, logfile=None):
     # 第二步，创建一个handler，用于写入日志文件
     logfile = logfile if logfile else './{}.log'.format(logger_name)
     fh = logging.FileHandler(logfile, mode='a', encoding='UTF-8')
-    fh.setLevel(logging.DEBUG)  # 输出到file的log等级的开关
+    fh.setLevel(logging.INFO)  # 输出到file的log等级的开关
 
     # 第三步，再创建一个handler，用于输出到控制台
     ch = logging.StreamHandler()
