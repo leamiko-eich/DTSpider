@@ -67,14 +67,14 @@ class DownloadImagesPipeline(ImagesPipeline):
 class DataBasePipeline(object):
     def process_item(self, item, spider):
         tables = []
-        if 'mongo' in SpiderTableNames[spider.name]:
-            tables += SpiderTableNames[spider.name]['mongo']
+        # if 'mongo' in SpiderTableNames[spider.name]:
+        #     tables += SpiderTableNames[spider.name]['mongo']
 
         if 'mysql' in SpiderTableNames[spider.name]:
             tables += SpiderTableNames[spider.name]['mysql']
 
-        if 'minio' in SpiderTableNames[spider.name]:
-            tables += SpiderTableNames[spider.name]['minio']
+        # if 'minio' in SpiderTableNames[spider.name]:
+        #     tables += SpiderTableNames[spider.name]['minio']
 
         for table in tables:
             try:
