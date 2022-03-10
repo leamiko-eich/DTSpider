@@ -186,13 +186,13 @@ class BaseChrome(BaseSelenium):
 
         down_num = int(task['down_num']) if 'down_num' in task else 5
         actions = ActionChains(self.driver)
-        actions.send_keys(Keys.DOWN * random.randint(5, 10))
-        actions.send_keys(Keys.UP * random.randint(1, 3))
-        actions.send_keys(Keys.DOWN * random.randint(5, 10))
-        actions.send_keys(Keys.UP * random.randint(1, 3))
+        actions.send_keys(Keys.DOWN * random.randint(5, 30))
+        actions.send_keys(Keys.UP * random.randint(1, 5))
+        actions.send_keys(Keys.DOWN * random.randint(5, 30))
+        actions.send_keys(Keys.UP * random.randint(5, 10))
         for i in range(down_num):
             actions.perform()
-            time.sleep(round(random.uniform(1.3, 1.9), 3))
+            time.sleep(round(random.uniform(0.1, 0.9), 3))
 
     def scroll_is_over(self):
         check_height = self.driver.execute_script("return document.body.scrollHeight;")  # 当前滚动条的高度
