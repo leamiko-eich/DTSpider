@@ -9,11 +9,14 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
+import time
 
 from PatternSpider.models.redis_model import OriginSettingsData, DistributedSettings
 from PatternSpider.tasks.facebook import FacebookTask
 from scrapy.cmdline import execute
 from PatternSpider.servers.ding_talk_server import DingTalk
+from PatternSpider.utils.local_utils import get_outer_host_ip
+
 
 class SpiderClient:
     @staticmethod
@@ -42,7 +45,9 @@ class SpiderClient:
         return json.loads(data)
 
     def main(self):
-        DingTalk().send_msg("采集程序开始运行了")
+        ip = get_outer_host_ip()
+        DingTalk().send_msg("ip:{}、采集程序5s之后开始开始运行了".format(ip))
+        time.sleep(5)
         # confs = self.read_settings_file()
         confs = self.get_settings_from_redis()
         # 将配置文件存入本地redis中做缓存
@@ -53,4 +58,3 @@ class SpiderClient:
 
 if __name__ == '__main__':
     SpiderClient().main()
-
