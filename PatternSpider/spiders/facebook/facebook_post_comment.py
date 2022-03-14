@@ -23,6 +23,7 @@ from PatternSpider.selenium_manage.base_chrome import FacebookChrome
 from PatternSpider.utils.logger_utils import get_logger
 from PatternSpider.utils.dict_utils import DictUtils
 from PatternSpider.utils.time_utils import timestamp_to_datetime
+from PatternSpider.servers.translate import Translate
 
 
 class FacebookPostCommentSpider(RedisSpider):
@@ -131,7 +132,7 @@ class FacebookPostCommentSpider(RedisSpider):
                     "userid": user['id'],
                     "homepage": user['url'],
                     "content": content,
-                    "content_cn": "",
+                    "content_cn": Translate().en_to_zh(content),
                     "comment_attach": json.dumps(attach_list) if attach_list else "",
                     "local_attach": "",
                     "comment_time": timestamp_to_datetime(node['created_time']) if node[

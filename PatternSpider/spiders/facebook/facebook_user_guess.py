@@ -16,6 +16,7 @@ import scrapy
 
 from PatternSpider.scrapy_redis.spiders import RedisSpider
 from PatternSpider.servers.ding_talk_server import ding_alarm
+from PatternSpider.servers.translate import Translate
 from PatternSpider.settings.spider_names import SpiderNames
 from PatternSpider.tasks import TaskManage
 from PatternSpider.selenium_manage.base_chrome import FacebookChrome
@@ -167,6 +168,7 @@ class FacebookUserGuessSpider(RedisSpider):
 
                 "title": "",
                 "content": content if content else '',
+                "content_cn": Translate().en_to_zh(content),
                 "profile_picture_url": profile_pic_dict.get('uri', '').replace('\\', '') if profile_pic_dict else '',
                 "post_time": creation_time if creation_time else '',
                 "post_attach": json.dumps(attach_list) if attach_list else '',
@@ -181,6 +183,7 @@ class FacebookUserGuessSpider(RedisSpider):
                 "share_post_time": share_guess_data.get('share_post_time', ''),
                 "share_title": "",
                 "share_content": share_guess_data.get('share_content', ''),
+                "share_content_cn": Translate().en_to_zh(share_guess_data.get('share_content', '')),
                 "share_post_attach": share_guess_data.get('share_post_attach', ''),
                 "share_post_local_attach": '',
             })

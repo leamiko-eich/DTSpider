@@ -13,7 +13,7 @@ import time
 from PatternSpider.models.redis_model import OriginSettingsData
 from PatternSpider.utils.dict_utils import DictUtils
 from PatternSpider.utils.time_utils import datetime_to_timestamp
-from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser, TableFBInstance
+from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser
 from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBAccount
 
 
@@ -25,7 +25,6 @@ class FacebookUtils:
         self.dict_util = DictUtils()
         self.settings_data = OriginSettingsData()
         self.fb_account = TableFBAccount()
-        self.fb_instance = TableFBInstance()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
