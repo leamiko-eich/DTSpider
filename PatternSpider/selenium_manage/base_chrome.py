@@ -115,7 +115,7 @@ class BaseChrome(BaseSelenium):
         desired_capabilities = self.get_caps()
         # 这里也可以对options和caps加入其他的参数，比如代理参数等
         chrome = webdriver.Chrome(
-            executable_path="chromedriver.exe",
+            executable_path=os.path.join(os.getcwd(),'chromedriver.exe'),
             options=options,
             desired_capabilities=desired_capabilities
         )
