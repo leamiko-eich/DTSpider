@@ -114,12 +114,19 @@ class BaseChrome(BaseSelenium):
         options = self.get_log_options(headless)
         desired_capabilities = self.get_caps()
         # 这里也可以对options和caps加入其他的参数，比如代理参数等
-        chrome = webdriver.Chrome(
-            executable_path=os.path.join(os.getcwd(),'chromedriver.exe'),
-            options=options,
-            desired_capabilities=desired_capabilities
-        )
-        return chrome
+        for i in [96, 97, 98, 99]:
+            try:
+                chrome = webdriver.Chrome(
+                    executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_{}.exe'.format(i)),
+                    options=options,
+                    desired_capabilities=desired_capabilities
+                )
+                return chrome
+            except Exception as e:
+                print(e)
+                continue
+        print("启动浏览器失败")
+        exit(1)
 
     def get_api_data(self, match_url):
         log_xhr_array = []
