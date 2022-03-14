@@ -17,6 +17,7 @@ from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from PatternSpider.models.mysql_model import TableFBInstance, TableFBAccount
 from PatternSpider.models.redis_model import OriginSettingsData
+from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
 from PatternSpider.tasks import TaskManage
 from PatternSpider.spiders.facebook import FacebookUtils
@@ -83,7 +84,12 @@ class RedisSpiderSmartIdleClosedExensions(object):
 
         if self.idle_count > self.idle_number or not spider.login_data['login_res']:
             # 关闭当前chrome驱动
+            eip_address = get_outer_host_ip()
+            ding = "关闭采集程序：ip:{}、采集程序：{}\n".format(eip_address, spider.name)
+
+            # 关闭chrome驱动
             spider.facebook_chrome.driver.quit()
+
             if not spider.login_data['login_res']:
                 # 修改账号状态
                 settings_data = self.settings_data.get_settings_data()
@@ -91,6 +97,7 @@ class RedisSpiderSmartIdleClosedExensions(object):
                     {'id': settings_data['account_id']},
                     {'status': spider.login_data['account_status']}
                 )
+                ding += "理由：账号登录失败{}".format(spider.login_data['account_status'])
             else:
                 # 账号rank+1,daily_use_count+1
                 settings_data = self.settings_data.get_settings_data()
@@ -108,11 +115,10 @@ class RedisSpiderSmartIdleClosedExensions(object):
                 faileds_tasks = self.task.get_mirror_task(spider.name)
                 for faileds_task in faileds_tasks:
                     self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
+                ding += "理由：正常结束,失败任务数量:{}".format(len(faileds_tasks))
 
             # 获取当前机器实例id，并更新数据库状态为3
-            eip_address = get_outer_host_ip()
-            print(eip_address)
             self.fb_instance.update_status(eip_address=eip_address, value=3)
-
+            DingTalk().send_msg(ding)
             # 执行关闭爬虫操作
             self.crawler.engine.close_spider(spider, 'Waiting time exceeded')

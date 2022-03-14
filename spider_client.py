@@ -17,6 +17,8 @@ from scrapy.cmdline import execute
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
 
+ip = get_outer_host_ip()
+
 
 class SpiderClient:
     @staticmethod
@@ -26,10 +28,12 @@ class SpiderClient:
         code = kwargs.get('code', '')
         group_id = kwargs.get('group_id', '')
         if not (mode and account_id and group_id):
+            DingTalk().send_msg("ip:{}、获取的配置文件少参数".format(ip))
             return
 
         # 添加任务
-        spider_name = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
+        spider_name, task_num = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
+        DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
         execute(('scrapy crawl ' + spider_name).split())
 
@@ -45,13 +49,16 @@ class SpiderClient:
         return json.loads(data)
 
     def main(self):
-        ip = get_outer_host_ip()
-        DingTalk().send_msg("ip:{}、采集程序5s之后开始开始运行了".format(ip))
-        time.sleep(5)
+        DingTalk().send_msg("ip:{}、采集程序2s之后开始开始运行了".format(ip))
+        time.sleep(2)
         # confs = self.read_settings_file()
         confs = self.get_settings_from_redis()
+        DingTalk().send_msg("ip:{}、获取配置文件成功".format(ip))
+        time.sleep(1)
         # 将配置文件存入本地redis中做缓存
         OriginSettingsData().save_settings_data(confs)
+        DingTalk().send_msg("ip:{}、存入本地redis成功".format(ip))
+        time.sleep(1)
         # 开始启动采集程序
         self.run_facebook(**confs)
 

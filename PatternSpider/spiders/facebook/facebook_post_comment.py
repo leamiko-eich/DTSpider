@@ -51,7 +51,7 @@ class FacebookPostCommentSpider(RedisSpider):
             'login_res': login_res,
             'account_status': account_status
         }
-        print(self.login_data)
+        self.logger.info(json.dumps(self.login_data))
         time.sleep(10)
 
     @ding_alarm('spiders', name, logger)
