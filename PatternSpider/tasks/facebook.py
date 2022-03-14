@@ -26,8 +26,8 @@ class FacebookTask(TaskManage):
         """
         total_task_infos = kwargs.get('total_task_infos', {})
         for user_info in user_infos:
-            # del user_info['created_time']
-            # del user_info['updated_time']
+            del user_info['created_time']
+            del user_info['updated_time']
             total_task_infos['user_info'] = user_info
             self.write_task_from_spider_name(
                 SpiderNames.facebook_user,
