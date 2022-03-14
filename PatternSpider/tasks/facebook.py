@@ -209,7 +209,7 @@ class FacebookTask(TaskManage):
                 user_infos=fb_mysql_task,
                 total_task_infos=total_task_infos
             )
-        return spider_name,len(fb_mysql_task)
+        return spider_name, len(fb_mysql_task)
 
 
 if __name__ == '__main__':
