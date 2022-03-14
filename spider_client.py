@@ -49,11 +49,11 @@ class SpiderClient:
         DingTalk().send_msg("ip:{}、采集程序5s之后开始开始运行了".format(ip))
         time.sleep(5)
         # confs = self.read_settings_file()
-        confs = self.get_settings_from_redis()
+        # confs = self.get_settings_from_redis()
         # 将配置文件存入本地redis中做缓存
-        OriginSettingsData().save_settings_data(confs)
+        # OriginSettingsData().save_settings_data(confs)
         # 开始启动采集程序
-        self.run_facebook(**confs)
+        # self.run_facebook(**confs)
 
 
 if __name__ == '__main__':
