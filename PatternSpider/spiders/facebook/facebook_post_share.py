@@ -70,13 +70,15 @@ class FacebookPostShareSpider(RedisSpider):
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
         f, page_source = self.facebook_chrome.get_page_source_share(task['current_url_index'])
-        if not f:
-            return self.close_current_page(task)
-
         # 加一个访问当前主页的状态，如果当前页无法访问直接结束
         result = self.facebook_util.check_pagesource(page_source)
         if not result:
             return self.close_current_page(task, 4)
+
+        if not f:
+            return self.close_current_page(task)
+
+
 
         task['need_tab'] = 2
         yield scrapy.Request(
