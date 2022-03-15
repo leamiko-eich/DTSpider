@@ -404,23 +404,33 @@ class FacebookChrome(BaseChrome):
         # 切换到该页面
         self.get_handle(handle_index=handle_index)
         # 等待页面加载结束之后 返回页面源码
-        Wait(self.driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//span[@class="pcp91wgn"]')))
-        self.driver.find_element_by_xpath('//span[@class="pcp91wgn"]').click()
+        flag = 0
         time.sleep(5)
-        return self.driver.page_source
+        like_button = self.driver.find_element_by_xpath('//span[@class="pcp91wgn"]')
+        if like_button:
+            try:
+                like_button.click()
+                flag = 1
+            except:
+                flag = 0
+        time.sleep(5)
+        return flag, self.driver.page_source
 
     def get_page_source_share(self, handle_index):
         # 切换到该页面
         self.get_handle(handle_index=handle_index)
-        try:
-            Wait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '//div[@class="gtad4xkn"]')))
-            self.driver.find_elements_by_xpath('//div[@class="gtad4xkn"]')[2].click()
-        except Exception as e:
-            print(e)
+
+        flag = 0
         time.sleep(5)
-        return self.driver.page_source
+        share_button = self.driver.find_elements_by_xpath('//div[@class="gtad4xkn"]')
+        if share_button:
+            try:
+                share_button[2].click()
+                flag = 1
+            except:
+                flag = 0
+        time.sleep(5)
+        return flag, self.driver.page_source
 
 
 if __name__ == '__main__':
