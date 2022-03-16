@@ -133,7 +133,8 @@ class FacebookUserGuessSpider(RedisSpider):
             if datasource and type(datasource) == str:
                 post_id = self.dict_util.get_data_from_field(json.loads(datasource), 'post_fbid')
             else:
-                post_id = post_url.split('/')[-1]
+                post_id = None
+            post_id = post_id if post_id else post_url.split('/')[-1]
             # 创建时间
             creation_time = self.dict_util.get_data_from_field(context_layout, 'creation_time')
             creation_time = timestamp_to_datetime(creation_time) if creation_time else timestamp_to_datetime('0')
