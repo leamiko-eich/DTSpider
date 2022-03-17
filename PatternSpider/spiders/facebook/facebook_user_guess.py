@@ -135,7 +135,7 @@ class FacebookUserGuessSpider(RedisSpider):
             else:
                 post_id = None
             post_id = post_id if post_id else post_url.split('/')[-1]
-            post_id = post_id.split(':')[0]
+            post_id = str(post_id).split(':')[0]
             # 创建时间
             creation_time = self.dict_util.get_data_from_field(context_layout, 'creation_time')
             creation_time = timestamp_to_datetime(creation_time) if creation_time else timestamp_to_datetime('0')

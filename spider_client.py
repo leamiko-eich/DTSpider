@@ -16,7 +16,6 @@ from PatternSpider.tasks.facebook import FacebookTask
 from scrapy.cmdline import execute
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
-
 ip = get_outer_host_ip()
 
 
