@@ -28,6 +28,7 @@ class SpiderClient:
         account_id = kwargs.get('account_id', '')
         code = kwargs.get('code', '')
         group_id = kwargs.get('group_id', '')
+        group_id = json.loads(group_id)
         if not (mode and account_id and group_id):
             DingTalk().send_msg("ip:{}、获取的配置文件少参数".format(ip))
             return

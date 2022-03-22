@@ -117,12 +117,12 @@ class RedisSpiderSmartIdleClosedExensions(object):
                     self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
                 ding += "理由：正常结束,失败任务数量:{}".format(len(faileds_tasks))
 
-                # 上报日志：
-                log_upload(
-                    task_code=settings_data['code'],
-                    group_id=','.join(settings_data['group_id']),
-                    log_name=spider.name
-                )
+                # # 上报日志：
+                # log_upload(
+                #     task_code=settings_data['code'],
+                #     group_id=','.join(settings_data['group_id']),
+                #     log_name=spider.name
+                # )
 
             # 获取当前机器实例id，并更新数据库状态为3
             self.fb_instance.update_one(
