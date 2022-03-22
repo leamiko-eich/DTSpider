@@ -20,6 +20,7 @@ from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBAccount
 class FacebookUtils:
     _instance_lock = threading.Lock()
     headless = False
+    init_sleep = 60
 
     def __init__(self):
         self.dict_util = DictUtils()

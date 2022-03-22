@@ -18,6 +18,9 @@ from PatternSpider.spiders.facebook import FacebookUtils
 
 class FacebookTask(TaskManage):
     facebook_utils = FacebookUtils()
+    task_type_mapping = {
+        1: "fd_status", 2: "ui_status", 3: "tl_status", 4: "c_status", 5: "l_status", 6: "s_status"
+    }
 
     def add_facebook_user_task(self, user_infos, **kwargs):
         """
@@ -137,14 +140,12 @@ class FacebookTask(TaskManage):
         return SpiderNames.facebook_post_comment
 
     def add_task_from_mysql(self, mode, account_id, code, group_ids):
-        task_type_mapping = {
-            1: "fd_status", 2: "ui_status", 3: "tl_status", 4: "c_status", 5: "l_status", 6: "s_status"
-        }
+
         total_task_infos = {
             'mode': mode,
             'account_id': account_id,
             'code': code,
-            'task_type_mapping': task_type_mapping
+            'task_type_mapping': self.task_type_mapping
         }
         spider_name = SpiderNames.facebook_user
         fb_account = TableFBAccount()
@@ -166,7 +167,7 @@ class FacebookTask(TaskManage):
                 fb_mysql_task += table.find({
                     'task_group_code': task_info['group_code'],
                     'group_id': int(group_id),
-                    task_type_mapping[spider_type]: 0
+                    self.task_type_mapping[spider_type]: 0
                 })
 
             # 开始添加任务到redis

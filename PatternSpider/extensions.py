@@ -96,7 +96,7 @@ class RedisSpiderSmartIdleClosedExensions(object):
                 settings_data = self.settings_data.get_settings_data()
                 self.fb_account.update_one(
                     {'id': settings_data['account_id']},
-                    {'status': spider.login_data['account_status']}
+                    {'status': spider.login_data['account_status'], 'is_using': 0}
                 )
                 ding += "理由：账号登录失败{}".format(spider.login_data['account_status'])
             else:
@@ -110,7 +110,7 @@ class RedisSpiderSmartIdleClosedExensions(object):
                 daily_use_count = account_info['daily_use_count'] + 1
                 self.fb_account.update_one(
                     {'id': settings_data['account_id']},
-                    {'account_rank': account_rank, 'daily_use_count': daily_use_count}
+                    {'account_rank': account_rank, 'daily_use_count': daily_use_count, 'is_using': 0}
                 )
                 # 失败任务修改任务状态为
                 faileds_tasks = self.task.get_mirror_task(spider.name)

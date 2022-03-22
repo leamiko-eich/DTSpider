@@ -48,7 +48,7 @@ class FacebookUserSpider(RedisSpider):
             'account_status': account_status
         }
         print(self.login_data)
-        time.sleep(10)
+        time.sleep(self.facebook_util.init_sleep)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
