@@ -56,6 +56,7 @@ class FacebookPostCommentSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
+        self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
@@ -69,9 +70,11 @@ class FacebookPostCommentSpider(RedisSpider):
         if bboxes:
             bboxes_dicts = [json.loads(box) for box in bboxes]
             commments_datas, request = self.parse_comment(response, bboxes_dicts, task)
+            self.logger.info('1 入库')
             for commments_data in commments_datas:
                 yield commments_data
         # 开始系列点击:
+        self.logger.info('开始系列点击')
         first = self.go_comments_first()
         if not first:
             return self.close_current_task(task)
@@ -79,10 +82,12 @@ class FacebookPostCommentSpider(RedisSpider):
         more = self.get_comments_more()
         if not more:
             return self.close_current_task(task)
+        self.logger.info('开始下次请求')
         yield request if request else self.close_current_task(task)
 
     @ding_alarm('spiders', name, logger)
     def parse_graphql(self, response):
+        self.logger.info('开始捕获接口数据')
         task = json.loads(response.meta['task'])
         # 切换到标签页
         self.facebook_chrome.get_page_source_person(task['current_url_index'])
@@ -102,9 +107,12 @@ class FacebookPostCommentSpider(RedisSpider):
                 continue
             guess_nodes.append(comments_data)
         # 获取指定响应:
+        self.logger.info('解析评论')
         guesses_data, request = self.parse_comment(response, guess_nodes, task)
+        self.logger.info('入库')
         for guess in guesses_data:
             yield guess
+        self.logger.info('开始下次请求')
         yield request if request else self.close_current_task(task)
 
     @ding_alarm('spiders', name, logger)
@@ -214,6 +222,7 @@ class FacebookPostCommentSpider(RedisSpider):
         :param task: 请求头中配置的任务参数
         """
         # 关闭当前页
+        self.logger.info('关闭当前页')
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成

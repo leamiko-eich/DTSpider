@@ -47,17 +47,19 @@ class FacebookUserSpider(RedisSpider):
             'login_res': login_res,
             'account_status': account_status
         }
-        print(self.login_data)
+        self.logger.info(self.login_data)
         time.sleep(self.facebook_util.init_sleep)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
+        self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
         self.facebook_util.update_current_user_status(task, 1)
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
 
         result = self.facebook_util.check_pagesource(page_source)
         if result:
+            self.logger.info('开始解析数据')
             over_data = {
                 'homepage': "https://www.facebook.com/{}".format(task['raw']['username']),
                 'jumpname': task['raw']['username']
@@ -97,13 +99,17 @@ class FacebookUserSpider(RedisSpider):
                         'relationship': relationship_text,
                     })
 
+            self.logger.info('入库')
             yield over_data
             # 更新当前被采集对象为完成
+            self.logger.info('当前账号采集正常结束')
             self.facebook_util.update_current_user_status(task, 2)
         else:
             # 更新当前被采集对象为完成
+            self.logger.info('当前页面无法访问')
             self.facebook_util.update_current_user_status(task, 4)
         # 关闭当前页
+        self.logger.info('关闭当前页')
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         orgin_task = {'url': task['url'], 'raw': task['raw']}

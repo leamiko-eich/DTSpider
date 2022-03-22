@@ -61,11 +61,12 @@ class FacebookPostShareSpider(RedisSpider):
             'login_res': login_res,
             'account_status': account_status
         }
-        print(self.login_data)
+        self.logger.info(self.login_data)
         time.sleep(self.facebook_util.init_sleep)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
+        self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
@@ -78,8 +79,7 @@ class FacebookPostShareSpider(RedisSpider):
         if not f:
             return self.close_current_page(task)
 
-
-
+        self.logger.info('开始下次请求')
         task['need_tab'] = 2
         yield scrapy.Request(
             response.request.url,
@@ -90,6 +90,7 @@ class FacebookPostShareSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse_graphql(self, response):
+        self.logger.info('开始获取接口数据')
         task = json.loads(response.meta['task'])
         self.facebook_chrome.get_handle(task['current_url_index'])
         time.sleep(3)
@@ -99,12 +100,13 @@ class FacebookPostShareSpider(RedisSpider):
         for graphql_data in graphql_datas:
             reshares = self.dict_util.get_data_from_field(graphql_data, 'reshares')
             share_datas.append(graphql_data) if reshares else None
-
+        self.logger.info('解析数据')
         over_datas, request = self.parse_share_user(response, task, share_datas)
         # 数据入库和迭代下次请求
+        self.logger.info('入库')
         for over_data in over_datas:
             yield over_data
-
+        self.logger.info('开始下次请求')
         yield request if request else self.close_current_page(task)
 
     @ding_alarm('spiders', name, logger)
@@ -155,6 +157,7 @@ class FacebookPostShareSpider(RedisSpider):
 
     def close_current_page(self, task, task_status=2):
         # 关闭当前页
+        self.logger.info('关闭当前页')
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
