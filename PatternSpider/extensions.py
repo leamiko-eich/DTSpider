@@ -132,4 +132,4 @@ class RedisSpiderSmartIdleClosedExensions(object):
 
             DingTalk().send_msg(ding)
             # 执行关闭爬虫操作
-            # self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
+            self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
