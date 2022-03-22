@@ -476,6 +476,3 @@ class TableFBInstance(MysqlModel):
     COLL = 'fb_instance'
     UNIONFILED = 'eip_address'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
-
-    def update_status(self, eip_address, value: int):
-        return self.update_one({"eip_address": eip_address}, {'status': value})

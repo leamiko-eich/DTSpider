@@ -87,13 +87,13 @@ class RedisSpiderSmartIdleClosedExensions(object):
             # 关闭当前chrome驱动
             eip_address = get_outer_host_ip()
             ding = "关闭采集程序：ip:{}、采集程序：{}\n".format(eip_address, spider.name)
+            settings_data = self.settings_data.get_settings_data()
 
             # 关闭chrome驱动
             spider.facebook_chrome.driver.quit()
 
             if not spider.login_data['login_res']:
                 # 修改账号状态
-                settings_data = self.settings_data.get_settings_data()
                 self.fb_account.update_one(
                     {'id': settings_data['account_id']},
                     {'status': spider.login_data['account_status'], 'is_using': 0}
@@ -101,7 +101,6 @@ class RedisSpiderSmartIdleClosedExensions(object):
                 ding += "理由：账号登录失败{}".format(spider.login_data['account_status'])
             else:
                 # 账号rank+1,daily_use_count+1
-                settings_data = self.settings_data.get_settings_data()
                 account_info = self.fb_account.find({'id': settings_data['account_id']}, 1)
                 account_info['daily_use_count'] = account_info['daily_use_count'] if account_info[
                     'daily_use_count'] else 0
@@ -119,15 +118,18 @@ class RedisSpiderSmartIdleClosedExensions(object):
                 ding += "理由：正常结束,失败任务数量:{}".format(len(faileds_tasks))
 
                 # 上报日志：
-                # log_upload(
-                #     task_code=settings_data['code'],
-                #     group_id=','.join(settings_data['group_id']),
-                #     log_name=spider.name
-                # )
+                log_upload(
+                    task_code=settings_data['code'],
+                    group_id=','.join(settings_data['group_id']),
+                    log_name=spider.name
+                )
 
             # 获取当前机器实例id，并更新数据库状态为3
-            self.fb_instance.update_status(eip_address=eip_address, value=3)
+            self.fb_instance.update_one(
+                {'instance_id': settings_data['instance_id'], 'allocation_id': settings_data['allocation_id']},
+                {'status': 3}
+            )
 
             DingTalk().send_msg(ding)
             # 执行关闭爬虫操作
-            self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
+            # self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
