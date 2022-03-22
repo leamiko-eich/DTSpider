@@ -9,6 +9,7 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
+import os
 import time
 
 from PatternSpider.models.redis_model import OriginSettingsData, DistributedSettings
@@ -16,6 +17,7 @@ from PatternSpider.tasks.facebook import FacebookTask
 from scrapy.cmdline import execute
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
+
 ip = get_outer_host_ip()
 
 
@@ -38,6 +40,8 @@ class SpiderClient:
 
     @staticmethod
     def read_settings_file():
+        if not os.path.exists('settings.txt'):
+            return {}
         with open('settings.txt', encoding='utf-8') as f:
             settings = f.read()
         return {kv.replace(' ', '').split('=')[0]: kv.replace(' ', '').split('=')[1] for kv in settings.split('\n')}
@@ -48,15 +52,15 @@ class SpiderClient:
         return json.loads(data)
 
     def main(self):
-        DingTalk().send_msg("ip:{}、采集程序2s之后开始开始运行了".format(ip))
-        time.sleep(2)
-        # confs = self.read_settings_file()
-        confs = self.get_settings_from_redis()
+        confs = self.read_settings_file()
+        # confs = self.get_settings_from_redis()
+        if not confs:
+            DingTalk().send_msg("ip:{}、获取配置文件失败".format(ip))
+            return
         DingTalk().send_msg("ip:{}、获取配置文件成功".format(ip))
         time.sleep(1)
         # 将配置文件存入本地redis中做缓存
         OriginSettingsData().save_settings_data(confs)
-        DingTalk().send_msg("ip:{}、存入本地redis成功".format(ip))
         time.sleep(1)
         # 开始启动采集程序
         self.run_facebook(**confs)
