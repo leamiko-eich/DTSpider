@@ -392,6 +392,7 @@ class TableFBComment(MysqlModel):
         # 插入数据
         data_dict = {
             "comment_id": item['comment_id'],
+            "comment_name": item['comment_name'],
             "post_id": item['post_id'],
             "post_url": item.get("post_url", ""),
             "userid": item.get("userid", 0),

@@ -54,7 +54,7 @@ class FacebookTask(TaskManage):
                 source_userid=user_info['userid'],
                 source_homepage=user_info['homepage'],
                 username=user_info['homepage'].replace('https://www.facebook.com/', ''),
-                limit_count=user_info.get('limit_count', 500),
+                limit_count=user_info.get('limit_count', 5000),
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user_friends
@@ -95,7 +95,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_like,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=500,
+                limit_count=5000,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_like
@@ -114,7 +114,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_share,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=500,
+                limit_count=5000,
                 total_task_infos=total_task_infos
             )
 
@@ -134,7 +134,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_comment,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=500,
+                limit_count=5000,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_comment

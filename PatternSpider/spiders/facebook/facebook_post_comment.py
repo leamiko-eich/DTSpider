@@ -135,6 +135,7 @@ class FacebookPostCommentSpider(RedisSpider):
                 content = node['body']['text'] if node['body'] else ""
                 node.update({
                     "comment_id": node['legacy_fbid'],
+                    "comment_name": node['author']['short_name'],
                     "post_id": task['raw']['post_id'],
                     "post_url": task['raw']['post_url'],
                     "userid": user['id'],

@@ -61,7 +61,7 @@ class FacebookUtils:
 
         # 三次判断是否不再出现数据 因为网络的原因，即便滚动条到底部，也不一定真的采集结束：
         should_finish_count = task.get('should_finish_count', 0)
-        if should_finish_count > 3:
+        if should_finish_count > 1:
             return False, task
 
         # 判断是否滑动至底部
