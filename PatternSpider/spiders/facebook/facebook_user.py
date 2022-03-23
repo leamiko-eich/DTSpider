@@ -100,7 +100,8 @@ class FacebookUserSpider(RedisSpider):
                     })
 
             self.logger.info('入库')
-            yield over_data
+
+            yield over_data if 'userid' in over_data else self.facebook_util.update_current_user_status(task, 5)
             # 更新当前被采集对象为完成
             self.logger.info('当前账号采集正常结束')
             self.facebook_util.update_current_user_status(task, 2)

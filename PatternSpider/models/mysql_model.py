@@ -305,6 +305,7 @@ class TableFBGuess(MysqlModel):
                 "share_post_attach": item.get("share_post_attach", ""),
                 "share_content": item.get("share_content", ""),
             })
+
         res = self.is_exists(item=item)
         if not res:
             item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

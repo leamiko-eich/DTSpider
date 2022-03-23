@@ -179,6 +179,7 @@ class FacebookUtils:
         2，采集成功
         3，采集失败
         4，访问失败
+        5，获取user_id失败
         """
         total_task_infos = task['raw']['total_task_infos']
         mode = total_task_infos['mode']

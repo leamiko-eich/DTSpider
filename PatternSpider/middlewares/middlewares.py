@@ -103,7 +103,7 @@ class SeleniumMiddleware(object):
                 # 打开新的标签页
                 spider.facebook_chrome.driver.execute_script(JsSentence.open_new_label.format(request.url))
                 # 获取当前标签页的索引
-                current_url_index = spider.facebook_chrome.driver.window_handles[1]
+                current_url_index = spider.facebook_chrome.driver.window_handles[-1]
             else:
                 current_url_index = task['current_url_index']
                 # 获取当前窗口
