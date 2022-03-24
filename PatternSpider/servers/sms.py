@@ -164,7 +164,7 @@ class Sms:
 
 if __name__ == '__main__':
     # res = Sms().get_phone()
-    res = Sms().get_sms_info("16269455146")
+    res = Sms().get_sms_info("16269456098")
     # sms_info = Sms().release_phone()
     # sms_info = Sms().pull_black_phone()
     # res = Sms().release_all_phone()

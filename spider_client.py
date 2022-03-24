@@ -38,6 +38,8 @@ class SpiderClient:
         DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
         execute(('scrapy crawl ' + spider_name).split())
+        time.sleep(300)
+        execute(('scrapy crawl ' + spider_name).split())
 
     @staticmethod
     def read_settings_file():

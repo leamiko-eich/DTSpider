@@ -85,9 +85,9 @@ class RedisSpiderSmartIdleClosedExensions(object):
 
         if self.idle_count > self.idle_number or not spider.login_data['login_res']:
             # 关闭当前chrome驱动
-            eip_address = get_outer_host_ip()
-            ding = "关闭采集程序：ip:{}、采集程序：{}\n".format(eip_address, spider.name)
             settings_data = self.settings_data.get_settings_data()
+            ding = "关闭采集程序：instance_id:{},allocation_id:{}、采集程序：{}\n".format(
+                settings_data['instance_id'], settings_data['allocation_id'],spider.name)
 
             # 关闭chrome驱动
             spider.facebook_chrome.driver.quit()
