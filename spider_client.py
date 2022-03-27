@@ -14,11 +14,15 @@ import time
 
 from PatternSpider.models.redis_model import OriginSettingsData, DistributedSettings
 from PatternSpider.tasks.facebook import FacebookTask
-from scrapy.cmdline import execute
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
+from concurrent.futures import ThreadPoolExecutor
 
 ip = get_outer_host_ip()
+
+
+def start_spider(command):
+    os.system(command=command)
 
 
 class SpiderClient:
@@ -37,9 +41,12 @@ class SpiderClient:
         spider_name, task_num = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
         DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
-        execute(('scrapy crawl ' + spider_name).split())
-        time.sleep(300)
-        execute(('scrapy crawl ' + spider_name).split())
+        pool = ThreadPoolExecutor(max_workers=2)
+        for i in range(2):
+            pool.submit(start_spider, 'scrapy crawl ' + spider_name)
+        pool.shutdown()
+        # execute(('scrapy crawl ' + spider_name).split())
+        time.sleep(30000)
 
     @staticmethod
     def read_settings_file():

@@ -152,6 +152,29 @@ class OriginSettingsData(RedisModel):
         return json.loads(self.string_get(self.NAME))
 
 
+class RedisMainProcess(RedisModel):
+    CLIENTNAME = 'REDIS_DT'
+    NAME = 'main_process'
+
+    @redis_lock
+    def save_main_pid(self, pid):
+        self.pipeline.hget(self.NAME, 'main')
+        res = self.pipeline.execute()[0]
+        if res:
+            self.pipeline.hget(self.NAME, pid)
+            res = self.pipeline.execute()[0]
+            if not res:
+                self.pipeline.hset(self.NAME, pid, pid)
+        else:
+            self.pipeline.hset(self.NAME, 'main', pid)
+        return self.pipeline.execute()
+
+    @redis_lock
+    def get_main_pid(self):
+        self.pipeline.hget(self.NAME, 'main')
+        return self.pipeline.execute()[0].decode()
+
+
 # 分布式加锁获取settings
 class DistributedSettings(RedisModel):
     CLIENTNAME = 'REDIS_HUAWEI'
