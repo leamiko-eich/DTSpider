@@ -11,19 +11,22 @@
 import json
 import os
 import time
-
-from scrapy.cmdline import execute
-
 from PatternSpider.models.redis_model import OriginSettingsData, DistributedSettings
 from PatternSpider.tasks.facebook import FacebookTask
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.utils.local_utils import get_outer_host_ip
+from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
+
+
+def strat_spiders(spider_name, count=2):
+    process = CrawlerProcess(get_project_settings())
+    for i in range(count):
+        process.crawl(spider_name)
+    process.start()
+
 
 ip = get_outer_host_ip()
-
-
-def start_spider(command):
-    os.system(command=command)
 
 
 class SpiderClient:
@@ -42,8 +45,9 @@ class SpiderClient:
         spider_name, task_num = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
         DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
-        execute(('scrapy crawls ' + spider_name).split())
-        time.sleep(30000)
+        strat_spiders(spider_name)
+        # time.sleep(30000)
+        DingTalk().send_msg("采集程序结束测试本行代码是否执行，ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
 
     @staticmethod
     def read_settings_file():
