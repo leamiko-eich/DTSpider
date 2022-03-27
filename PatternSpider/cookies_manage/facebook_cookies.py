@@ -14,6 +14,23 @@ from PatternSpider.cookies_manage import RedisCookieModel
 
 class FacebookCookies(RedisCookieModel):
     CLIENTNAME = 'REDIS_DT'
+    NAME = 'facebook_cookies'
+
+    # 写cookie
+    def write_to_redis(self, account, data: list):
+        return self.hash_set(account, json.dumps(data))
+
+    # 获取cookie
+    def get_random_username_cookie(self):
+        username = self.get_random_key()
+        if not username:
+            return {}
+        cookie = self.get_value_from_key(username)
+        return {'username': username, 'cookie': json.loads(cookie)}
+
+
+class FacebookAccount(RedisCookieModel):
+    CLIENTNAME = 'REDIS_DT'
     NAME = 'facebook_account'
 
     # 写cookie
@@ -23,7 +40,7 @@ class FacebookCookies(RedisCookieModel):
             'password': password,
             'key': key,
         }
-        return self.set(account, json.dumps(infos))
+        return self.hash_set(account, json.dumps(infos))
 
     # 获取cookie
     def get_random_username_cookie(self):
@@ -35,5 +52,5 @@ class FacebookCookies(RedisCookieModel):
 
 
 if __name__ == '__main__':
-    # FacebookCookies().write_to_redis('+8616269456098', 'liufeifan1206', 'QWETR6KKWED5LX7A5E3RJ5QT5OJELQO3')
-    FacebookCookies().write_to_redis('100069879049118', 'czSlh4rg', 'BFLEDUIK5DGPX7KMWALDBQVWBTZ7FRM3')
+    # FacebookAccount().write_to_redis('+8616269456098', 'liufeifan1206', 'QWETR6KKWED5LX7A5E3RJ5QT5OJELQO3')
+    FacebookAccount().write_to_redis('100069879049118', 'czSlh4rg', 'BFLEDUIK5DGPX7KMWALDBQVWBTZ7FRM3')

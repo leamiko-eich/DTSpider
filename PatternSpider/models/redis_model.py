@@ -44,16 +44,16 @@ class RedisModel:
         self.pipeline = self.db.pipeline()
 
     # hash类型=============================================================================
-    def count_cookies(self):
+    def hash_count_cookies(self):
         return self.db.hlen(self.NAME)
 
-    def get_all(self):
+    def hash_get_all(self):
         return self.db.hgetall(self.NAME)
 
-    def set(self, key, value):
+    def hash_set(self, key, value):
         return self.db.hset(self.NAME, key, value)
 
-    def del_cookie(self, key):
+    def hash_del_cookie(self, key):
         return self.db.hdel(self.NAME, key)
 
     # zset类型===============================================================================
@@ -63,7 +63,7 @@ class RedisModel:
         except BaseException as e:
             print("add redis %s" % e)
 
-    def write_item_to_redis(self, key, score, data_dict):
+    def zset_write_item_to_redis(self, key, score, data_dict):
         # 向redis中写入数据
         try:
             self.db.zadd(key, {json.dumps(data_dict, ensure_ascii=False): score})
@@ -73,7 +73,7 @@ class RedisModel:
     def zset_get_all(self, key):
         return self.db.zrange(key, 0, -1)
 
-    def get_count(self, key):
+    def zset_get_count(self, key):
         return self.db.zcard(key)
 
     # string类型========================================================================================

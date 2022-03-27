@@ -22,7 +22,7 @@ class TaskManage(RedisModel):
             url=url,
             raw=raw
         )
-        self.write_item_to_redis(redis_key, score, data)
+        self.zset_write_item_to_redis(redis_key, score, data)
 
     def write_task_from_spider_name(self, spider_name, other_raw=None, **kwargs):
         url = get_url_from_spider_name(

@@ -19,7 +19,7 @@ from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from scrapy.utils.project import get_project_settings
-from PatternSpider.cookies_manage.facebook_cookies import FacebookCookies
+from PatternSpider.cookies_manage.facebook_cookies import FacebookAccount, FacebookCookies
 from PatternSpider.utils.js_utils import JsSentence
 from PatternSpider.selenium_manage import BaseSelenium
 from selenium.webdriver.common.by import By
@@ -223,6 +223,7 @@ class FacebookChrome(BaseChrome):
         super(self.__class__, self).__init__()
         self.logger = logger
         self.driver = self.get_new_chrome(headless=headless)
+        self.facebook_account = FacebookAccount()
         self.facebook_cookie = FacebookCookies()
         account_info = self.get_account()
         self.account = account_info['account']
@@ -236,7 +237,7 @@ class FacebookChrome(BaseChrome):
         """
         :return: 从redis中获取账号信息
         """
-        account_info = self.facebook_cookie.get_random_username_cookie()
+        account_info = self.facebook_account.get_random_username_cookie()
         return json.loads(account_info['cookie'])
 
     def get_token(self):
@@ -284,6 +285,8 @@ class FacebookChrome(BaseChrome):
             login_name = self.driver.find_element_by_xpath(
                 '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
             self.logger.info("登录成功：{}".format(login_name))
+
+            self.facebook_cookie.write_to_redis(self.account,self.driver.get_cookies())
             return True, 0
         except Exception as e:
             self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
@@ -298,6 +301,15 @@ class FacebookChrome(BaseChrome):
         self.driver.get(url=self.URL)
         self.driver.maximize_window()  # 窗口最大化
         self.driver.implicitly_wait(3)  # 隐式等待
+
+        # 如果已经登录过就不再登录:
+        cookies = self.facebook_cookie.get_random_username_cookie()
+        if cookies:
+            for i in cookies['cookie']:
+                self.driver.add_cookie(i)
+            self.driver.refresh()
+            time.sleep(3)
+            return self.check_login()
 
         # 输入账号密码
         self.driver.find_element_by_id("email").send_keys(self.account)

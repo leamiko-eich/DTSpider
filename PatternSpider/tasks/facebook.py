@@ -12,7 +12,7 @@ from PatternSpider.tasks import TaskManage
 from PatternSpider.settings.spider_names import SpiderNames
 from PatternSpider.models.mysql_model import TableFBTask, TableFBAccount
 from PatternSpider.models.mysql_model import TableFBDailyUser
-from PatternSpider.cookies_manage.facebook_cookies import FacebookCookies
+from PatternSpider.cookies_manage.facebook_cookies import FacebookAccount
 from PatternSpider.spiders.facebook import FacebookUtils
 
 
@@ -151,7 +151,7 @@ class FacebookTask(TaskManage):
         fb_account = TableFBAccount()
         # 采集账号获取
         account_info = fb_account.find({'id': int(account_id)}, 1)
-        FacebookCookies().write_to_redis(account_info['username'], account_info['password'], account_info['login_key'])
+        FacebookAccount().write_to_redis(account_info['username'], account_info['password'], account_info['login_key'])
         fb_mysql_task = []
         if mode == "once":
             fb_task = TableFBTask()

@@ -59,7 +59,7 @@ class TwitterCookies(RedisCookieModel):
     # 写cookie
     def write_to_redis(self):
         infos = get_infos()
-        return self.set('tourists', json.dumps(infos))
+        return self.hash_set('tourists', json.dumps(infos))
 
     # 获取cookie
     def get_random_username_cookie(self):
