@@ -16,7 +16,6 @@ from PatternSpider.utils.dict_utils import DictUtils
 from PatternSpider.utils.time_utils import datetime_to_timestamp
 from PatternSpider.models.mysql_model import TableFBDailyUser, TableFBPost, TableFBOnceUser
 from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBAccount
-from PatternSpider.models.redis_model import RedisMainProcess
 
 
 class FacebookUtils:
@@ -25,7 +24,6 @@ class FacebookUtils:
     init_sleep = 60
 
     def __init__(self):
-        RedisMainProcess().save_main_pid(str(os.getpid()))
         self.dict_util = DictUtils()
         self.settings_data = OriginSettingsData()
         self.fb_account = TableFBAccount()

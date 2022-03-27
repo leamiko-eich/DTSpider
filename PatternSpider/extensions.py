@@ -13,11 +13,12 @@
 # Define here the models for your scraped Extensions
 import json
 import os
+import threading
 
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from PatternSpider.models.mysql_model import TableFBInstance, TableFBAccount
-from PatternSpider.models.redis_model import OriginSettingsData, RedisMainProcess
+from PatternSpider.models.redis_model import OriginSettingsData
 from PatternSpider.servers.ding_talk_server import DingTalk
 from PatternSpider.tasks import TaskManage
 from PatternSpider.spiders.facebook import FacebookUtils
@@ -91,25 +92,23 @@ class RedisSpiderSmartIdleClosedExensions(object):
 
             # 关闭chrome驱动
             spider.facebook_chrome.driver.quit()
-            main_pid = RedisMainProcess().get_main_pid()
-            if main_pid == str(os.getpid()):
-                # 修改账号状态
-                ding = self.update_account_info(spider, settings_data, ding)
-                # 修改被采集账号任务状态
-                ding = self.update_task_status(spider, ding)
-                # # 上报日志：
-                # log_upload(
-                #     task_code=settings_data['code'],
-                #     group_id=','.join(settings_data['group_id']),
-                #     log_name=spider.name
-                # )
-                # 获取当前机器实例id，并更新数据库状态为3
-                self.fb_instance.update_one(
-                    {'status': 1, 'instance_id': settings_data['instance_id'],
-                     'allocation_id': settings_data['allocation_id']},
-                    {'status': 3}
-                )
-                DingTalk().send_msg(ding)
+            # 修改账号状态
+            ding = self.update_account_info(spider, settings_data, ding)
+            # 修改被采集账号任务状态
+            ding = self.update_task_status(spider, ding)
+            # # 上报日志：
+            # log_upload(
+            #     task_code=settings_data['code'],
+            #     group_id=','.join(settings_data['group_id']),
+            #     log_name=spider.name
+            # )
+            # 获取当前机器实例id，并更新数据库状态为3
+            self.fb_instance.update_one(
+                {'status': 1, 'instance_id': settings_data['instance_id'],
+                 'allocation_id': settings_data['allocation_id']},
+                {'status': 3}
+            )
+            DingTalk().send_msg(ding)
             # 执行关闭爬虫操作
             self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
 
