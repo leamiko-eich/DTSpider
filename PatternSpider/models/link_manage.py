@@ -17,6 +17,7 @@ from elasticsearch5 import Elasticsearch
 from minio import Minio
 from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
+from dbutils.pooled_db import PooledDB
 
 
 class LinkManege(object):
@@ -68,32 +69,38 @@ class LinkManege(object):
     # #################################################获取mysql连接####################################################
     # mysql连接数据库
     def __get_mysql_connection(self, client_name):
-        # 重新连接
         client_config = self.settings.get(client_name)
-        conn = pymysql.connect(
-            client_config["host"],
-            client_config["user"],
-            client_config["pwd"],
-            client_config["database"],
-            client_config["port"],
-            charset='utf8mb4',
+        # 重新连接
+        pool = PooledDB(
+            creator=pymysql,
+            mincached=1,
+            maxcached=5,
+            host=client_config["host"],
+            user=client_config["user"],
+            passwd=client_config["pwd"],
+            db=client_config["database"],
+            port=client_config["port"],
+            charset="utf8mb4",
             cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True, read_timeout=60, write_timeout=60, max_allowed_packet=500 * 1024 * 1024
+            autocommit=True, read_timeout=60, write_timeout=600, max_allowed_packet=500 * 1024 * 1024
         )
-        self.__set_db_pool(client_name, conn)
-        return conn
+        self.__set_db_pool(client_name, pool)
+        return pool
 
     # mysql获取实例连接
     def get_mysql_db(self, client_name):
-        conn = self.__get_db_pool(client_name)
-        if conn != {}:
+        pool = self.__get_db_pool(client_name)
+        if pool != {}:
             try:
+                conn = pool.connection()
                 conn.ping(reconnect=True)
             except Exception as e:
                 print(e)
-                conn = self.__get_mysql_connection(client_name)
+                pool = self.__get_mysql_connection(client_name)
+                conn = pool.connection()
         else:
-            conn = self.__get_mysql_connection(client_name)
+            pool = self.__get_mysql_connection(client_name)
+            conn = pool.connection()
         return conn
 
     # #################################################获取elasticsearch连接#############################################

@@ -30,6 +30,14 @@ class MysqlModel:
         self.db = LinkManege().get_mysql_db(self.CLIENTNAME)
         self.cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
 
+    def __del__(self):
+        try:
+            self.cursor.close()
+            self.db.close()
+        except Exception as e:
+            print(str(e))
+            pass
+
     def find_from_sql(self, sql):
         self.cursor.execute(sql)
         return self.cursor.fetchall()
