@@ -54,8 +54,8 @@ class FacebookPostLikeSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
-        self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
+        self.logger.info('1 解析响应,{}'.format(task['url']))
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
         f, page_source = self.facebook_chrome.get_page_source_like(task['current_url_index'])
@@ -67,7 +67,7 @@ class FacebookPostLikeSpider(RedisSpider):
         if not f:
             return self.close_current_page(task)
 
-        self.logger.info('开始下次请求')
+        self.logger.info('开始下次请求,{}'.format(task['url']))
         yield scrapy.Request(
             response.request.url,
             callback=self.parse_graphql,  # 处理响应的回调函数。
@@ -77,8 +77,8 @@ class FacebookPostLikeSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse_graphql(self, response):
-        self.logger.info('开始获取接口数据')
         task = json.loads(response.meta['task'])
+        self.logger.info('开始获取接口数据,{}'.format(task['url']))
         self.facebook_chrome.get_handle(task['current_url_index'])
         graphql_datas = self.facebook_chrome.get_graphql_data()
 
@@ -88,13 +88,13 @@ class FacebookPostLikeSpider(RedisSpider):
             if post_data:
                 if "CometUFIReactionsDialog" in post_data['fb_api_req_friendly_name']:
                     like_datas.append(graphql_data)
-        self.logger.info('开始解析')
+        self.logger.info('开始解析,{}'.format(task['url']))
         over_datas, request = self.parse_like_user(response, task, like_datas)
-        self.logger.info('入库')
+        self.logger.info('入库,{}'.format(task['url']))
         # 数据入库和迭代下次请求
         for over_data in over_datas:
             yield over_data
-        self.logger.info('开始下次请求')
+        self.logger.info('开始下次请求,{}'.format(task['url']))
         yield request if request else self.close_current_page(task)
 
     @ding_alarm('spiders', name, logger)
@@ -119,7 +119,7 @@ class FacebookPostLikeSpider(RedisSpider):
 
         # 判断是否进行下一次请求
         is_next, task = self.facebook_util.is_next_request(task, len(over_datas))
-        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        self.logger.info('spider name:{},the number I have collected is {}'.format(task['url'], task['had_count']))
         if is_next:
             request = scrapy.Request(
                 response.request.url,
@@ -133,7 +133,7 @@ class FacebookPostLikeSpider(RedisSpider):
 
     def close_current_page(self, task, task_status=2):
         # 关闭当前页
-        self.logger.info('关闭当前页')
+        self.logger.info('关闭当前页{}'.format(task['url']))
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成

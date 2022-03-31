@@ -56,8 +56,8 @@ class FacebookUserGuessSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
-        self.logger.info("第一次响应解析")
         task = json.loads(response.meta['task'])
+        self.logger.info('第一次响应解析,{}'.format(task['url']))
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
         # 解析数据
@@ -67,7 +67,7 @@ class FacebookUserGuessSpider(RedisSpider):
         if not result:
             return self.close_current_task(task, 4)
 
-        self.logger.info("第一次数据开始解析")
+        self.logger.info('第一次数据开始解析,{}'.format(task['url']))
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
         if not bboxes:
@@ -86,16 +86,16 @@ class FacebookUserGuessSpider(RedisSpider):
                 guess_nodes.append(timeline_list_feed_units['edges'][0]['node'])
 
         guesses_data, request = self.parse_guess(response, guess_nodes, task, True)
-        self.logger.info("第一次数据入库")
+        self.logger.info('第一次数据入库,{}'.format(task['url']))
         for guess in guesses_data:
             yield guess
-        self.logger.info("第二次请求开始")
+        self.logger.info('第二次请求开始,{}'.format(task['url']))
         yield request if request else self.close_current_task(task)
 
     @ding_alarm('spiders', name, logger)
     def parse_graphql(self, response):
-        self.logger.info("开始获取接口数据")
         task = json.loads(response.meta['task'])
+        self.logger.info('开始获取接口数据,{}'.format(task['url']))
         # 切换到标签页
         self.facebook_chrome.get_page_source_person(task['current_url_index'])
         # 获取该标签页的graphql接口数据
@@ -118,12 +118,12 @@ class FacebookUserGuessSpider(RedisSpider):
                 guess_nodes.append(guess_data['data']['node'])
 
         # 获取指定响应:
-        self.logger.info("开始解析数据")
+        self.logger.info('开始解析数据,{}'.format(task['url']))
         guesses_data, request = self.parse_guess(response, guess_nodes, task)
-        self.logger.info("入库")
+        self.logger.info('入库,{}'.format(task['url']))
         for guess in guesses_data:
             yield guess
-        self.logger.info('开始下一次请求')
+        self.logger.info('开始下一次请求,{}'.format(task['url']))
         yield request if request else self.close_current_task(task)
 
     @ding_alarm('spiders', name, logger)
@@ -203,7 +203,7 @@ class FacebookUserGuessSpider(RedisSpider):
         # 下一页请求判断
         is_next, task = self.facebook_util.is_next_request(task, len(over_datas), creation_time=creation_time)
         is_next = True if enforce_next else is_next
-        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        self.logger.info('spider name:{},the number I have collected is {}'.format(task['url'], task['had_count']))
         if is_next:
             request = scrapy.Request(
                 response.request.url,
@@ -248,7 +248,7 @@ class FacebookUserGuessSpider(RedisSpider):
         :param task_status: 当前被采集对象的采集结果 2 成功 3 采集失败 4 访问失败
         """
         # 关闭当前页
-        self.logger.info('关闭当前页')
+        self.logger.info('关闭当前页,{}'.format(task['url']))
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成

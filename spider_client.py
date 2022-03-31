@@ -19,7 +19,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
 
-def strat_spiders(spider_name, count=2):
+def strat_spiders(spider_name, count=3):
     process = CrawlerProcess(get_project_settings())
     for i in range(count):
         process.crawl(spider_name)

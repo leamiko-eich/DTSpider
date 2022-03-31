@@ -55,8 +55,8 @@ class FacebookUserFriendsSpider(RedisSpider):
 
     @ding_alarm("spiders", name, logger)
     def parse(self, response):
-        self.logger.info('第一次响应解析')
         task = json.loads(response.meta['task'])
+        self.logger.info('第一次响应解析,{}'.format(task['url']))
         self.facebook_util.update_current_user_status(task, 1)
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
@@ -69,18 +69,18 @@ class FacebookUserFriendsSpider(RedisSpider):
         if bboxes:
             bboxes_dicts = [json.loads(box) for box in bboxes]
             friends_data, request = self.parse_friends(response, bboxes_dicts, task)
-            self.logger.info('第一次 入库')
+            self.logger.info('第一次 入库,{}'.format(task['url']))
             for f in friends_data:
                 yield f
-            self.logger.info('开始第二次请求')
+            self.logger.info('开始第二次请求,{}'.format(task['url']))
             yield request if request else self.close_current_task(task)
         else:
             self.close_current_task(task)
 
     @ding_alarm("spiders", name, logger)
     def parse_graphql(self, response):
-        self.logger.info('开始捕获接口数据')
         task = json.loads(response.meta['task'])
+        self.logger.info('开始捕获接口数据,{}'.format(task['url']))
         self.facebook_chrome.get_page_source_person(task['current_url_index'])
         graphql_data_list = self.facebook_chrome.get_graphql_data()
 
@@ -91,12 +91,12 @@ class FacebookUserFriendsSpider(RedisSpider):
             friend_datas.append(friend_data) if friend_data else None
 
         # 开始解析数据
-        self.logger.info('解析数据')
+        self.logger.info('解析数据,{}'.format(task['url']))
         friends_data, request = self.parse_friends(response, friend_datas, task)
-        self.logger.info('入库')
+        self.logger.info('入库,{}'.format(task['url']))
         for fr in friends_data:
             yield fr
-        self.logger.info('开始下一次请求')
+        self.logger.info('开始下一次请求,{}'.format(task['url']))
         yield request if request else self.close_current_task(task)
 
     @ding_alarm('spiders', name, logger)
@@ -125,7 +125,7 @@ class FacebookUserFriendsSpider(RedisSpider):
 
         # 判断是否进行下一次请求
         is_next, task = self.facebook_util.is_next_request(task, len(over_datas))
-        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        self.logger.info('spider name:{},the number I have collected is {}'.format(task['url'], task['had_count']))
         if is_next:
             request = scrapy.Request(
                 response.request.url,
@@ -139,7 +139,7 @@ class FacebookUserFriendsSpider(RedisSpider):
 
     @ding_alarm("spiders", name, logger)
     def close_current_task(self, task, task_status=2):
-        self.logger.info('关闭当前页')
+        self.logger.info('关闭当前页,{}'.format(task['url']))
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, task_status)
         # 关闭当前页

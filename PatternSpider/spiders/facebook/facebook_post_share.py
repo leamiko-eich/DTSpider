@@ -66,8 +66,8 @@ class FacebookPostShareSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
-        self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
+        self.logger.info('1 解析响应,{}'.format(task['url']))
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
         f, page_source = self.facebook_chrome.get_page_source_share(task['current_url_index'])
@@ -79,7 +79,7 @@ class FacebookPostShareSpider(RedisSpider):
         if not f:
             return self.close_current_page(task)
 
-        self.logger.info('开始下次请求')
+        self.logger.info('开始下次请求,{}'.format(task['url']))
         task['need_tab'] = 2
         yield scrapy.Request(
             response.request.url,
@@ -90,8 +90,8 @@ class FacebookPostShareSpider(RedisSpider):
 
     @ding_alarm('spiders', name, logger)
     def parse_graphql(self, response):
-        self.logger.info('开始获取接口数据')
         task = json.loads(response.meta['task'])
+        self.logger.info('开始获取接口数据,{}'.format(task['url']))
         self.facebook_chrome.get_handle(task['current_url_index'])
         time.sleep(3)
         graphql_datas = self.facebook_chrome.get_graphql_data()
@@ -100,13 +100,13 @@ class FacebookPostShareSpider(RedisSpider):
         for graphql_data in graphql_datas:
             reshares = self.dict_util.get_data_from_field(graphql_data, 'reshares')
             share_datas.append(graphql_data) if reshares else None
-        self.logger.info('解析数据')
+        self.logger.info('解析数据,{}'.format(task['url']))
         over_datas, request = self.parse_share_user(response, task, share_datas)
         # 数据入库和迭代下次请求
-        self.logger.info('入库')
+        self.logger.info('入库,{}'.format(task['url']))
         for over_data in over_datas:
             yield over_data
-        self.logger.info('开始下次请求')
+        self.logger.info('开始下次请求,{}'.format(task['url']))
         yield request if request else self.close_current_page(task)
 
     @ding_alarm('spiders', name, logger)
@@ -143,7 +143,7 @@ class FacebookPostShareSpider(RedisSpider):
             del task['need_tab']
         # 判断是否进行下一次请求
         is_next, task = self.facebook_util.is_next_request(task, len(over_datas))
-        self.logger.info('spider name:{},the number I have collected is {}'.format(self.name, task['had_count']))
+        self.logger.info('spider name:{},the number I have collected is {}'.format(task['url'], task['had_count']))
         if is_next:
             request = scrapy.Request(
                 response.request.url,
@@ -157,7 +157,7 @@ class FacebookPostShareSpider(RedisSpider):
 
     def close_current_page(self, task, task_status=2):
         # 关闭当前页
-        self.logger.info('关闭当前页')
+        self.logger.info('关闭当前页,{}'.format(task['url']))
         self.facebook_chrome.driver.close()
         self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
