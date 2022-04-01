@@ -173,7 +173,7 @@ class TableFBUser(MysqlModel):
     CLIENTNAME = 'MYSQL_DT'
     DATABASE = 'social_data'
     COLL = 'fb_user'
-    UNIONFILED = 'userid'
+    UNIONFILED = 'homepage'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
 
     def run(self, item):
@@ -210,10 +210,10 @@ class TableFBUser(MysqlModel):
             "updated_by": "lff",
             "df": 0,
         }
-        res = self.is_exists(item=item)
+        res = self.is_exists(item=data_dict)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query={self.UNIONFILED: item[self.UNIONFILED]}, data_dict=data_dict)
@@ -244,13 +244,13 @@ class TableFBFriend(MysqlModel):
             "df": 0,
         }
         query = {
-            'source_userid': data_dict['source_userid'],
-            'userid': data_dict['userid']
+            'source_homepage': data_dict['source_userid'],
+            'homepage': data_dict['userid']
         }
-        res = self.is_exists(item=item, query=query)
+        res = self.is_exists(item=data_dict, query=query)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query=query, data_dict=data_dict)
@@ -314,10 +314,10 @@ class TableFBGuess(MysqlModel):
                 "share_content": item.get("share_content", ""),
             })
 
-        res = self.is_exists(item=item)
+        res = self.is_exists(item=data_dict)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query={self.UNIONFILED: item[self.UNIONFILED]}, data_dict=data_dict)
@@ -346,10 +346,10 @@ class TableFBPostLike(MysqlModel):
             'post_id': data_dict['post_id'],
             'userid': data_dict['userid']
         }
-        res = self.is_exists(item=item, query=query)
+        res = self.is_exists(item=data_dict, query=query)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query=query, data_dict=data_dict)
@@ -379,10 +379,10 @@ class TableFBPostShare(MysqlModel):
             'post_id': data_dict['post_id'],
             'userid': data_dict['userid']
         }
-        res = self.is_exists(item=item, query=query)
+        res = self.is_exists(item=data_dict, query=query)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query=query, data_dict=data_dict)
@@ -414,10 +414,10 @@ class TableFBComment(MysqlModel):
             "updated_by": "lff",
             "df": 0,
         }
-        res = self.is_exists(item=item)
+        res = self.is_exists(item=data_dict)
         if not res:
-            item['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            item['created_by'] = "lff"
+            data_dict['created_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_dict['created_by'] = "lff"
             self.insert_one(data_dict=data_dict)
         else:
             self.update_one(query={self.UNIONFILED: item[self.UNIONFILED]}, data_dict=data_dict)

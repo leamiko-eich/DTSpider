@@ -230,9 +230,6 @@ class FacebookChrome(BaseChrome):
         self.password = account_info['password']
         self.key = account_info['key']
 
-    def __del__(self):
-        self.driver.quit()
-
     def get_account(self):
         """
         :return: 从redis中获取账号信息
