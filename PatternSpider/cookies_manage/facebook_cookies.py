@@ -17,7 +17,7 @@ class FacebookCookies(RedisCookieModel):
     NAME = 'facebook_cookies'
 
     # 写cookie
-    def write_to_redis(self, account, data: list):
+    def write_to_redis(self, account, data: dict):
         return self.hash_set(account, json.dumps(data))
 
     # 获取cookie
@@ -25,8 +25,8 @@ class FacebookCookies(RedisCookieModel):
         username = self.get_random_key()
         if not username:
             return {}
-        cookie = self.get_value_from_key(username)
-        return {'username': username, 'cookie': json.loads(cookie)}
+        login_result = self.get_value_from_key(username)
+        return {'username': username, 'login_result': json.loads(login_result)}
 
 
 class FacebookAccount(RedisCookieModel):

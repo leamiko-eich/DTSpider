@@ -11,18 +11,8 @@
 # -*- coding: utf-8 -*-
 
 # Define here the models for your scraped Extensions
-import json
-import os
-import threading
-
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
-from PatternSpider.models.mysql_model import TableFBInstance, TableFBAccount
-from PatternSpider.models.redis_model import OriginSettingsData
-from PatternSpider.servers.ding_talk_server import DingTalk
-from PatternSpider.tasks import TaskManage
-from PatternSpider.spiders.facebook import FacebookUtils
-from PatternSpider.servers.log_upload import log_upload
 
 
 class RedisSpiderSmartIdleClosedExensions(object):
@@ -32,11 +22,6 @@ class RedisSpiderSmartIdleClosedExensions(object):
         self.idle_number = idle_number
         self.idle_list = []
         self.idle_count = 0
-        self.fb_instance = TableFBInstance()
-        self.fb_account = TableFBAccount()
-        self.settings_data = OriginSettingsData()
-        self.task = TaskManage()
-        self.facebook_util = FacebookUtils()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -85,59 +70,7 @@ class RedisSpiderSmartIdleClosedExensions(object):
             self.idle_count = 0
 
         if self.idle_count > self.idle_number or not spider.login_data['login_res']:
-            # 获取原始数据
-            settings_data = self.settings_data.get_settings_data()
-            ding = "关闭采集程序：instance_id:{},allocation_id:{}、采集程序：{}\n".format(
-                settings_data['instance_id'], settings_data['allocation_id'], spider.name)
-
             # 关闭chrome驱动
             spider.facebook_chrome.driver.quit()
-            # 修改账号状态
-            ding = self.update_account_info(spider, settings_data, ding)
-            # 修改被采集账号任务状态
-            ding = self.update_task_status(spider, ding)
-            # # 上报日志：
-            # log_upload(
-            #     task_code=settings_data['code'],
-            #     group_id=','.join(settings_data['group_id']),
-            #     log_name=spider.name
-            # )
-            # 获取当前机器实例id，并更新数据库状态为3
-            self.fb_instance.update_one(
-                {'status': 1, 'instance_id': settings_data['instance_id'],
-                 'allocation_id': settings_data['allocation_id']},
-                {'status': 3}
-            )
-            DingTalk().send_msg(ding)
             # 执行关闭爬虫操作
             self.crawler.engine.close_spider(spider, 'Waiting time exceeded')
-
-    def update_account_info(self, spider, settings_data, ding):
-        if not spider.login_data['login_res']:
-            # 修改账号状态
-            self.fb_account.update_one(
-                {'id': settings_data['account_id']},
-                {'status': spider.login_data['account_status'], 'is_using': 0}
-            )
-            ding += "理由：账号登录失败{}".format(spider.login_data['account_status'])
-        else:
-            # 账号rank+1,daily_use_count+1
-            account_info = self.fb_account.find({'id': settings_data['account_id']}, 1)
-            account_info['daily_use_count'] = account_info['daily_use_count'] if account_info[
-                'daily_use_count'] else 0
-            account_info['account_rank'] = account_info['account_rank'] if account_info['account_rank'] else 0
-            account_rank = account_info['account_rank'] + 1
-            daily_use_count = account_info['daily_use_count'] + 1
-            self.fb_account.update_one(
-                {'id': settings_data['account_id']},
-                {'account_rank': account_rank, 'daily_use_count': daily_use_count, 'is_using': 0}
-            )
-        return ding
-
-    def update_task_status(self, spider, ding):
-        # 失败任务修改任务状态为
-        faileds_tasks = self.task.get_mirror_task(spider.name)
-        for faileds_task in faileds_tasks:
-            self.facebook_util.update_current_user_status(json.loads(faileds_task), 3)
-        ding += "理由：正常结束,失败任务数量:{}".format(len(faileds_tasks))
-        return ding

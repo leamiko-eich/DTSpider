@@ -40,14 +40,15 @@ class SpiderClient:
         if not (mode and account_id and group_id):
             DingTalk().send_msg("ip:{}、获取的配置文件少参数".format(ip))
             return
-
+        fb_task_manager = FacebookTask()
         # 添加任务
-        spider_name, task_num = FacebookTask().add_task_from_mysql(mode, account_id, code, group_id)
+        spider_name, task_num = fb_task_manager.add_task_from_mysql(mode, account_id, code, group_id)
         DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
         strat_spiders(spider_name)
-        # time.sleep(30000)
-        DingTalk().send_msg("采集程序结束测试本行代码是否执行，ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
+        ding = fb_task_manager.end_task(spider_name)
+        DingTalk().send_msg(ding)
+        time.sleep(600)
 
     @staticmethod
     def read_settings_file():

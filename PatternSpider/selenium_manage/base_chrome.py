@@ -271,23 +271,31 @@ class FacebookChrome(BaseChrome):
         login failed  4
         "Help us confirm it's you"    5
         """
+        cookies = []
         try:
             if "Help us confirm it's you" in self.driver.page_source:
-                return False, 5
-            if "Your account has been disabled" in self.driver.page_source:
-                return False, -1
-            if "You're Temporarily Blocked" in self.driver.page_source or "You're temporarily blocked" in self.driver.page_source:
-                return False, 3
-
-            login_name = self.driver.find_element_by_xpath(
-                '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
-            self.logger.info("登录成功：{}".format(login_name))
-
-            self.facebook_cookie.write_to_redis(self.account,self.driver.get_cookies())
-            return True, 0
+                login_res, account_status = 0, 5
+            elif "Your account has been disabled" in self.driver.page_source:
+                login_res, account_status = 0, -1
+            elif "You're Temporarily Blocked" in self.driver.page_source or "You're temporarily blocked" in self.driver.page_source:
+                login_res, account_status = 0, 3
+            else:
+                login_name = self.driver.find_element_by_xpath(
+                    '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
+                self.logger.info("登录成功：{}".format(login_name))
+                cookies = self.driver.get_cookies()
+                login_res, account_status = 1, 0
         except Exception as e:
             self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
-            return False, 4
+            login_res, account_status = 0, 4
+
+        login_result = {
+            'login_res': login_res,
+            'account_status': account_status,
+            'cookies': cookies
+        }
+        self.facebook_cookie.write_to_redis(self.account, login_result)
+        return login_res, account_status
 
     def login_facebook(self):
         """
@@ -302,11 +310,15 @@ class FacebookChrome(BaseChrome):
         # 如果已经登录过就不再登录:
         cookies = self.facebook_cookie.get_random_username_cookie()
         if cookies:
-            for i in cookies['cookie']:
-                self.driver.add_cookie(i)
-            self.driver.refresh()
-            time.sleep(3)
-            return self.check_login()
+            login_result = cookies['login_result']
+            if login_result['login_res'] == 1:
+                for i in login_result['cookies']:
+                    self.driver.add_cookie(i)
+                self.driver.refresh()
+                time.sleep(3)
+                return self.check_login()
+            else:
+                return 0, 6
 
         # 输入账号密码
         self.driver.find_element_by_id("email").send_keys(self.account)
