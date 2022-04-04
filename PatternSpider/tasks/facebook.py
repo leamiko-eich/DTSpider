@@ -57,7 +57,7 @@ class FacebookTask(TaskManage):
                 source_userid=user_info['userid'],
                 source_homepage=user_info['homepage'],
                 username=user_info['homepage'].replace('https://www.facebook.com/', ''),
-                limit_count=user_info.get('limit_count', 5000),
+                limit_count=user_info.get('limit_count', 2000),
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_user_friends
@@ -98,7 +98,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_like,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=5000,
+                limit_count=2000,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_like
@@ -117,7 +117,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_share,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=5000,
+                limit_count=2000,
                 total_task_infos=total_task_infos
             )
 
@@ -137,7 +137,7 @@ class FacebookTask(TaskManage):
                 SpiderNames.facebook_post_comment,
                 post_url=post['post_url'].replace("\\/", "/").replace("\/", "/"),
                 post_id=post['post_id'],
-                limit_count=5000,
+                limit_count=2000,
                 total_task_infos=total_task_infos
             )
         return SpiderNames.facebook_post_comment
@@ -269,17 +269,3 @@ class FacebookTask(TaskManage):
             {'status': 3}
         )
         return ding
-
-
-if __name__ == '__main__':
-    user_infos = [
-        {"homepage": "https://www.facebook.com/jaleel.daniels"},
-        {"homepage": "https://www.facebook.com/donte.gordon.71"},
-        {"homepage": "https://www.facebook.com/profile.php?id=100011746563640"},
-        {"homepage": "https://www.facebook.com/patrick.tembreull"},
-        {"homepage": "https://www.facebook.com/nathan.cohen.165"},
-        {"homepage": "https://www.facebook.com/joseph.ellul.90"},
-        {"homepage": "https://www.facebook.com/tyler.ward.3551380"},
-        {"homepage": "https://www.facebook.com/lucas.fraustfro"},
-    ]
-    FacebookTask().add_facebook_user_task(user_infos)

@@ -260,6 +260,20 @@ class FacebookChrome(BaseChrome):
             token = None
         return token
 
+    def check_login_result(self):
+        login_results = [
+            {"account_status": -1, "str_patterns": ["Your account has been disabled"]},
+            {"account_status": 3, "str_patterns": ["你的帳號已被鎖住"]},
+            {"account_status": 5, "str_patterns": ["Help us confirm it's you"]},
+            {"account_status": 6, "str_patterns": ["Suspended Your Account", "We've suspended your account"]},
+            {"account_status": 7, "str_patterns": ["帐号或密码无效"]},
+        ]
+        for i in login_results:
+            for j in i['str_patterns']:
+                if j in self.driver.page_source:
+                    return i['account_status']
+        return 0
+
     def check_login(self):
         """
         :return: bool值 检测当前浏览器是否登录成功
@@ -267,24 +281,21 @@ class FacebookChrome(BaseChrome):
         账号状态，-1：被封（blocked），0：可用，1：备用，2：临时受限，3：锁定（locked），4：出错（Error） 5:需要验证
         "Your account has been disabled"    -1
         login successful 0
-        You're Temporarily Blocked 3
+        You're Temporarily Blocked/你的帳號已被鎖住 3
         login failed  4
         "Help us confirm it's you"    5
+        We Suspended Your Account   6(我们暂停了您的帐户)
         """
         cookies = []
         try:
-            if "Help us confirm it's you" in self.driver.page_source:
-                login_res, account_status = 0, 5
-            elif "Your account has been disabled" in self.driver.page_source:
-                login_res, account_status = 0, -1
-            elif "You're Temporarily Blocked" in self.driver.page_source or "You're temporarily blocked" in self.driver.page_source:
-                login_res, account_status = 0, 3
-            else:
-                login_name = self.driver.find_element_by_xpath(
-                    '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
-                self.logger.info("登录成功：{}".format(login_name))
-                cookies = self.driver.get_cookies()
-                login_res, account_status = 1, 0
+            account_status = self.check_login_result()
+            if account_status != 0:
+                return 0, account_status
+            login_name = self.driver.find_element_by_xpath(
+                '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
+            self.logger.info("登录成功：{}".format(login_name))
+            cookies = self.driver.get_cookies()
+            login_res, account_status = 1, 0
         except Exception as e:
             self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
             login_res, account_status = 0, 4
