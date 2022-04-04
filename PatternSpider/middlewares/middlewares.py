@@ -113,9 +113,9 @@ class SeleniumMiddleware(object):
             # 获取首页源代码 防止等待
             origin_code = spider.facebook_chrome.get_page_source(0)
             task['current_url_index'] = current_url_index
-            request.meta['task'] = json.dumps(task)
             task["middlewares_status"] = 1
             # 终止下载器下载，直接返回响应
+            request.meta['task'] = json.dumps(task)
             res = Response(url=request.url, encoding='utf8', body=origin_code, request=request)
         except Exception as e:
             error = "current spider is {}：\n middlewares error info is : {}".format(spider.name, traceback.format_exc())
