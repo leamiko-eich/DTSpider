@@ -85,7 +85,7 @@ class FacebookUserFriendsSpider(RedisSpider):
     def parse_graphql(self, response):
         task = json.loads(response.meta['task'])
         self.logger.info('开始捕获接口数据,{}'.format(task['url']))
-        self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        self.facebook_chrome.get_handle(task['current_url_index'])
         self.logger.info('获取当前页源代码成功,{}'.format(task['url']))
         graphql_data_list = self.facebook_chrome.get_graphql_data()
         self.logger.info('开始捕获接口数据成功,{}'.format(task['url']))
