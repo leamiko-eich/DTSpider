@@ -94,9 +94,9 @@ class RequestsMiddleware(object):
 
 class SeleniumMiddleware(object):
     def process_request(self, request, spider):
+        # 获取meta数据，并将当前标签页的索引放入task中，以便于spider的解析
+        task = json.loads(request.meta['task'])
         try:
-            # 获取meta数据，并将当前标签页的索引放入task中，以便于spider的解析
-            task = json.loads(request.meta['task'])
             if 'current_url_index' not in task:
                 # 先切换到首页再打开新的窗口，防止其他窗口被关闭后无法执行js语句
                 spider.facebook_chrome.get_handle(0)
@@ -114,10 +114,13 @@ class SeleniumMiddleware(object):
             origin_code = spider.facebook_chrome.get_page_source(0)
             task['current_url_index'] = current_url_index
             request.meta['task'] = json.dumps(task)
+            task["middlewares_status"] = 1
             # 终止下载器下载，直接返回响应
             res = Response(url=request.url, encoding='utf8', body=origin_code, request=request)
         except Exception as e:
             error = "current spider is {}：\n middlewares error info is : {}".format(spider.name, traceback.format_exc())
             DingTalk().send_msg(error)
+            task["middlewares_status"] = 0
+            request.meta['task'] = json.dumps(task)
             return Response(url=request.url, encoding='utf8', body="", request=request)
         return res

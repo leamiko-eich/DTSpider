@@ -58,6 +58,10 @@ class FacebookUserFriendsSpider(RedisSpider):
         task = json.loads(response.meta['task'])
         self.logger.info('第一次响应解析,{}'.format(task['url']))
         self.facebook_util.update_current_user_status(task, 1)
+
+        # 如果访问超时再加一个状态：
+        if not task["middlewares_status"]:
+            return self.close_current_task(task, 5)
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
         # 加一个访问当前主页的状态，如果当前页无法访问直接结束
@@ -82,14 +86,16 @@ class FacebookUserFriendsSpider(RedisSpider):
         task = json.loads(response.meta['task'])
         self.logger.info('开始捕获接口数据,{}'.format(task['url']))
         self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        self.logger.info('获取当前页源代码成功,{}'.format(task['url']))
         graphql_data_list = self.facebook_chrome.get_graphql_data()
+        self.logger.info('开始捕获接口数据成功,{}'.format(task['url']))
 
         # 获取指定响应:
         friend_datas = []
         for need_data in graphql_data_list:
             friend_data = self.dict_util.get_data_from_field(need_data, '__typename', 'TimelineAppCollection')
             friend_datas.append(friend_data) if friend_data else None
-
+        self.logger.info('获取指定数据成功,{}'.format(task['url']))
         # 开始解析数据
         self.logger.info('解析数据,{}'.format(task['url']))
         friends_data, request = self.parse_friends(response, friend_datas, task)
@@ -142,11 +148,14 @@ class FacebookUserFriendsSpider(RedisSpider):
         self.logger.info('关闭当前页,{}'.format(task['url']))
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, task_status)
-        # 关闭当前页
-        self.facebook_chrome.driver.close()
-        self.facebook_chrome.get_handle(0)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
+        try:
+            self.facebook_chrome.get_handle(task['current_url_index'])
+            self.facebook_chrome.driver.close()
+            self.facebook_chrome.get_handle(0)
+        except:
+            self.facebook_chrome.get_handle(0)
 
 
 if __name__ == '__main__':

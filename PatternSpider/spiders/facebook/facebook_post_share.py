@@ -70,6 +70,10 @@ class FacebookPostShareSpider(RedisSpider):
         self.logger.info('1 解析响应,{}'.format(task['url']))
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
+        # 如果访问超时再加一个状态：
+        if not task["middlewares_status"]:
+            return self.close_current_page(task, 5)
+
         f, page_source = self.facebook_chrome.get_page_source_share(task['current_url_index'])
         # 加一个访问当前主页的状态，如果当前页无法访问直接结束
         result = self.facebook_util.check_pagesource(page_source)
@@ -158,12 +162,18 @@ class FacebookPostShareSpider(RedisSpider):
     def close_current_page(self, task, task_status=2):
         # 关闭当前页
         self.logger.info('关闭当前页,{}'.format(task['url']))
-        self.facebook_chrome.driver.close()
-        self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
         self.facebook_util.update_current_user_status(task, task_status)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
+
+        try:
+            self.facebook_chrome.get_handle(task['current_url_index'])
+            self.facebook_chrome.driver.close()
+            self.facebook_chrome.get_handle(0)
+        except:
+            self.facebook_chrome.get_handle(0)
+
 
 
 if __name__ == '__main__':

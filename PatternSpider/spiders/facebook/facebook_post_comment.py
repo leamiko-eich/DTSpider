@@ -60,8 +60,18 @@ class FacebookPostCommentSpider(RedisSpider):
         self.logger.info('1 解析响应 {}'.format(task['url']))
         # 更新当前被采集对象为进行时
         self.facebook_util.update_current_user_status(task, 1)
+
+        # 如果访问超时再加一个状态：
+        if not task["middlewares_status"]:
+            return self.close_current_task(task, 5)
+
         # 解析数据
         page_source = self.facebook_chrome.get_page_source_person(task['current_url_index'])
+        # 加一个访问当前主页的状态，如果当前页无法访问直接结束
+        result = self.facebook_util.check_pagesource(page_source)
+        if not result:
+            return self.close_current_task(task, 4)
+
         task['down_num'] = 0
         # 解析页面源码中本身中带的评论
         request = None
@@ -218,18 +228,22 @@ class FacebookPostCommentSpider(RedisSpider):
                 self.facebook_chrome.scroll_down()
             location_y = element.location_once_scrolled_into_view['y']
 
-    def close_current_task(self, task):
+    def close_current_task(self, task, task_status=2):
         """
         :param task: 请求头中配置的任务参数
         """
         # 关闭当前页
         self.logger.info('关闭当前页,{}'.format(task['url']))
-        self.facebook_chrome.driver.close()
-        self.facebook_chrome.get_handle(0)
         # 更新当前被采集对象为完成
-        self.facebook_util.update_current_user_status(task, 2)
+        self.facebook_util.update_current_user_status(task, task_status)
         orgin_task = {'url': task['url'], 'raw': task['raw']}
         self.task_manage.del_item("mirror:" + self.name, json.dumps(orgin_task, ensure_ascii=False))
+        try:
+            self.facebook_chrome.get_handle(task['current_url_index'])
+            self.facebook_chrome.driver.close()
+            self.facebook_chrome.get_handle(0)
+        except:
+            self.facebook_chrome.get_handle(0)
 
 
 if __name__ == '__main__':

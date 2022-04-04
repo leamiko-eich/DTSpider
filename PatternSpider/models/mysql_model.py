@@ -57,7 +57,7 @@ class MysqlModel:
             return self.cursor.fetchall()
 
     def insert_one(self, data_dict):
-        sql = '''insert into {}(%s) value(%s)'''.format(self.COLL)
+        sql = '''replace into {}(%s) value(%s)'''.format(self.COLL)
         key_list = []
         value_list = []
         for k, v in data_dict.items():
