@@ -20,7 +20,7 @@ from PatternSpider.models.mysql_model import TableFBOncePublic, TableFBAccount
 
 class FacebookUtils:
     _instance_lock = threading.Lock()
-    headless = False
+    headless = True
     init_sleep = 20
 
     def __init__(self):
