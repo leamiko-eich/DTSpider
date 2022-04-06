@@ -224,7 +224,7 @@ class FacebookTask(TaskManage):
                 {'id': settings_data['account_id']},
                 {'status': login_result['account_status'], 'is_using': 0}
             )
-            ding += "理由：账号登录失败{}".format(login_result['account_status'])
+            ding += "理由：账号登录失败{}，账号id:{}".format(login_result['account_status'], settings_data['account_id'])
         else:
             # 账号rank+1,daily_use_count+1
             account_info = TableFBAccount().find({'id': settings_data['account_id']}, 1)
