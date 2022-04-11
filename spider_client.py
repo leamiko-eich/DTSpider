@@ -45,7 +45,7 @@ class SpiderClient:
         spider_name, task_num = fb_task_manager.add_task_from_mysql(mode, account_id, code, group_id)
         DingTalk().send_msg("ip:{}、采集程序：{}、任务数量：{}".format(ip, spider_name, task_num))
         # 开启爬虫
-        strat_spiders(spider_name)
+        strat_spiders(spider_name, count=1)
         ding = fb_task_manager.end_task(spider_name)
         DingTalk().send_msg(ding)
         time.sleep(600)
