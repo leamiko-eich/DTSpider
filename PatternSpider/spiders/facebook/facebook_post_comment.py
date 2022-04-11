@@ -143,10 +143,10 @@ class FacebookPostCommentSpider(RedisSpider):
                 attachment = self.dict_util.get_data_from_field(node['attachments'], 'attachment')
                 attach_list = self.facebook_util.parse_attache(attachment) if attachment else ""
                 content = node['body']['text'] if node['body'] else ""
+                author = node['author']
                 node.update({
                     "comment_id": node['legacy_fbid'],
-                    "comment_name": node['author']['short_name'] if 'short_name' in node['author'] else node['author'][
-                        'name'],
+                    "comment_name": author['name'] if 'name' in author else author['short_name'],
                     "post_id": task['raw']['post_id'],
                     "post_url": task['raw']['post_url'],
                     "userid": user['id'],
