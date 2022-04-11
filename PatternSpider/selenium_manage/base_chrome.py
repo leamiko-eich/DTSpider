@@ -264,9 +264,14 @@ class FacebookChrome(BaseChrome):
         login_results = [
             {"account_status": -1, "str_patterns": ["Your account has been disabled"]},
             {"account_status": 3, "str_patterns": ["你的帳號已被鎖住"]},
-            {"account_status": 5, "str_patterns": ["Help us confirm it's you"]},
+            {"account_status": 5,
+             "str_patterns": ["Help us confirm it's you",
+                              "Login approval needed",
+                              "Choose an option",
+                              "Get a code sent to your email address",
+                              "We'll send you a text with a code to confirm the number belongs to you."]},
             {"account_status": 6, "str_patterns": ["Suspended Your Account", "We've suspended your account"]},
-            {"account_status": 7, "str_patterns": ["帐号或密码无效"]},
+            {"account_status": 7, "str_patterns": ["帐号或密码无效", "密码有误"]}
         ]
         for i in login_results:
             for j in i['str_patterns']:
