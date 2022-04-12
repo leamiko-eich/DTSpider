@@ -72,6 +72,10 @@ class FacebookUserGuessSpider(RedisSpider):
         if not result:
             return self.close_current_task(task, 4)
 
+        # 如果没有帖子直接返回：
+        if "No posts available" in page_source:
+            return self.close_current_task(task)
+
         self.logger.info('第一次数据开始解析,{}'.format(task['url']))
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
@@ -88,6 +92,8 @@ class FacebookUserGuessSpider(RedisSpider):
             # 个人页
             timeline_list_feed_units = self.dict_util.get_data_from_field(bbox, 'timeline_list_feed_units')
             if timeline_list_feed_units:
+                if not timeline_list_feed_units['edges']:
+                    continue
                 guess_nodes.append(timeline_list_feed_units['edges'][0]['node'])
 
         guesses_data, request = self.parse_guess(response, guess_nodes, task, True)
