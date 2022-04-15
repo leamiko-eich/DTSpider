@@ -125,7 +125,8 @@ class FacebookUserFriendsSpider(RedisSpider):
                     'homepage': node['url'] if 'url' in node else '',
                     'name': node['title']['text'] if 'title' in node and 'text' in node['title'] else '',
                     'avatar': node['image']['uri'] if 'image' in node else '',
-                    'subname': node['subtitle_text'] if 'subtitle_text' in node else ''
+                    'subname': node['subtitle_text'] if 'subtitle_text' in node else '',
+                    'title': node['subtitle_text']['text'] if 'subtitle_text' in node else '',
                 })
                 over_datas.append(friend)
 
