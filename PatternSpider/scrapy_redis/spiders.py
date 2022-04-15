@@ -144,6 +144,7 @@ class RedisMixin(object):
                 else:
                     data = self.return_url(task=task_string)
             else:
+                dict_data = {}
                 data = None
 
             if not data:
@@ -153,7 +154,7 @@ class RedisMixin(object):
                 self.server.zadd('mirror:{0}'.format(self.name),{task_string:row_score})
             except BaseException as e:
                 pass
-            req = self.make_request_from_data(data)
+            req = self.make_request_from_data(dict_data)
             req.meta['task'] = task_string
             if req:
                 yield req
@@ -164,7 +165,7 @@ class RedisMixin(object):
         if found:
             self.logger.debug("Read %s requests from '%s'", found, self.redis_key)
 
-    def make_request_from_data(self, data):
+    def make_request_from_data(self, dict_data):
         """Returns a Request instance from data coming from Redis.
 
         By default, ``data`` is an encoded URL. You can override this method to
@@ -176,7 +177,7 @@ class RedisMixin(object):
             Message from redis.
 
         """
-        url = bytes_to_str(data, self.redis_encoding)
+        url = bytes_to_str(dict_data['url'], self.redis_encoding)
         return self.make_requests_from_url(url)
 
     def schedule_next_requests(self):

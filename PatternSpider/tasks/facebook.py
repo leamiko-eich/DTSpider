@@ -148,7 +148,8 @@ class FacebookTask(TaskManage):
             'mode': mode,
             'account_id': account_id,
             'code': code,
-            'task_type_mapping': self.task_type_mapping
+            'task_type_mapping': self.task_type_mapping,
+            'task_info': {'day_length': 1}
         }
         spider_name = SpiderNames.facebook_user
         fb_account = TableFBAccount()
