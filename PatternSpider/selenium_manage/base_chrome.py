@@ -191,12 +191,10 @@ class BaseChrome(BaseSelenium):
             ActionChains(self.driver).send_keys(Keys.TAB * int(task['need_tab'])).perform()
             time.sleep(2)
 
-        down_num = int(task['down_num']) if 'down_num' in task else 30
+        down_num = int(task['down_num']) if 'down_num' in task else 5
         actions = ActionChains(self.driver)
         actions.send_keys(Keys.DOWN * random.randint(5, 100))
         actions.send_keys(Keys.UP * random.randint(1, 5))
-        actions.send_keys(Keys.DOWN * random.randint(5, 100))
-        actions.send_keys(Keys.UP * random.randint(5, 10))
         for i in range(down_num):
             actions.perform()
             time.sleep(round(random.uniform(0.1, 0.5), 3))
