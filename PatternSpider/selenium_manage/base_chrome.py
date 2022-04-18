@@ -293,12 +293,13 @@ class FacebookChrome(BaseChrome):
         try:
             account_status = self.check_login_result()
             if account_status != 0:
-                return 0, account_status
-            login_name = self.driver.find_element_by_xpath(
-                '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
-            self.logger.info("登录成功：{}".format(login_name))
-            cookies = self.driver.get_cookies()
-            login_res, account_status = 1, 0
+                login_res, account_status = 0, account_status
+            else:
+                login_name = self.driver.find_element_by_xpath(
+                    '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
+                self.logger.info("登录成功：{}".format(login_name))
+                cookies = self.driver.get_cookies()
+                login_res, account_status = 1, 0
         except Exception as e:
             self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
             login_res, account_status = 0, 4
