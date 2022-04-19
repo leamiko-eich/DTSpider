@@ -82,6 +82,7 @@ class FacebookUserGuessSpider(RedisSpider):
         if not bboxes:
             return self.close_current_task(task)
 
+        task['user_info'] = self.facebook_util.get_user_info(bboxes)
         bboxes_dicts = [json.loads(box) for box in bboxes]
         guess_nodes = []
         for bbox in bboxes_dicts:
@@ -174,10 +175,12 @@ class FacebookUserGuessSpider(RedisSpider):
             share_guess_data = self.parse_share_guess(attached_story_user, attached_story_attachment)
 
             node.update({
-                "userid": task['raw'].get("userid", 0),
+                "userid": task['user_info'].get("userid", 0),
                 "homepage": task['raw'].get("homepage", ""),
-                "name": task['raw'].get("name", ""),
+                "name": task['user_info'].get("name", ""),
                 "jumpname": task['raw'].get("homepage", "").replace("https://www.facebook.com/", ""),
+                'object_type': task['raw']['total_task_infos']['user_info']['object_type'],
+                'object_number': task['raw']['total_task_infos']['user_info']['object_number'],
 
                 "post_id": post_id,
                 "post_url": post_url.replace('\\', '') if post_url else '',

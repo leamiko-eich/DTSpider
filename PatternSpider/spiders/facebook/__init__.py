@@ -8,6 +8,7 @@
 # @Version : 1.0
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
+import json
 import os
 import threading
 import time
@@ -201,3 +202,24 @@ class FacebookUtils:
                 "Go to News Feed" in page_source):
             return False
         return True
+
+    def get_user_info(self, bboxes):
+        user_info = {}
+        for box in bboxes:
+            try:
+                person = self.dict_util.get_data_from_field(json.loads(box), '__isProfile', 'User')
+                page = self.dict_util.get_data_from_field(json.loads(box), '__isProfile', 'Page')
+                user_info['user_type'] = 'person' if person else 'page'
+                user = person if person else page
+                if not user:
+                    continue
+                user_info.update({
+                    'viewer_user_id': user['viewer']['actor']['id'],
+                    'userid': user['id'],
+                    'name': user['name'],
+                    'homepage': user['url']
+                })
+                break
+            except Exception as e:
+                continue
+        return user_info

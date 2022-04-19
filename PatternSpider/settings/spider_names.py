@@ -33,6 +33,19 @@ class SpiderNames:
     facebook_post_share = 'facebook_post_share'
     facebook_post_comment = 'facebook_post_comment'
 
+    facebook_user_friends_api = 'facebook_user_friends_api'
+    facebook_post_share_api = 'facebook_post_share_api'
+
+    # deagel
+    deagel_equipment_directories = 'deagel_equipment_directories'
+    deagel_equipment_list = 'deagel_equipment_list'
+    deagel_equipment = 'deagel_equipment'
+
+    deagel_countries = 'deagel_countries'
+    deagel_reports = 'deagel_reports'
+    deagel_news = 'deagel_news'
+    deagel_gallery = 'deagel_gallery'
+
 
 SpiderTableNames = {
     # dvidshun spider image data:
@@ -74,6 +87,9 @@ SpiderTableNames = {
     SpiderNames.facebook_post_comment: {
         'mongo': ['MONGO_DT/facebook/post_comment'],
         'mysql': ['MYSQL_DT/social_data/fb_comment']
-    }
-
+    },
+    SpiderNames.facebook_user_friends_api: {
+        'mongo': ['MONGO_DT/facebook/friends_api'],
+        'mysql': ['MYSQL_DT/social_data/fb_friend']
+    },
 }

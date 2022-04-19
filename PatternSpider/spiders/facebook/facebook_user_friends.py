@@ -71,6 +71,7 @@ class FacebookUserFriendsSpider(RedisSpider):
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
         if bboxes:
+            task['user_info'] = self.facebook_util.get_user_info(bboxes)
             bboxes_dicts = [json.loads(box) for box in bboxes]
             friends_data, request = self.parse_friends(response, bboxes_dicts, task)
             self.logger.info('第一次 入库,{}'.format(task['url']))
@@ -119,8 +120,11 @@ class FacebookUserFriendsSpider(RedisSpider):
                 if not user_id:
                     continue
                 friend.update({
-                    "source_userid": task['raw'].get("source_userid", ""),
+                    "source_userid": task['user_info'].get("userid", ""),
+                    "source_username": task['user_info'].get("name", ""),
                     "source_homepage": task['raw'].get("source_homepage", ""),
+                    'object_type': task['raw']['total_task_infos']['user_info']['object_type'],
+                    'object_number': task['raw']['total_task_infos']['user_info']['object_number'],
                     'userid': user_id,
                     'homepage': node['url'] if 'url' in node else '',
                     'name': node['title']['text'] if 'title' in node and 'text' in node['title'] else '',

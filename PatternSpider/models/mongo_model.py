@@ -108,6 +108,20 @@ class MongoFacebookFriend(MongoModel):
         }
         self.save_one_item(item, filter_coll)
 
+class MongoFacebookFriendApi(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'facebook'
+    COLL = 'friends_api'
+    UNIONFILED = 'user_id_and_friend_id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        filter_coll = {
+            'source_userid': item['source_userid'],
+            'userid': item['userid'],
+        }
+        self.save_one_item(item, filter_coll)
+
 
 class MongoFacebookGeuss(MongoModel):
     CLIENTNAME = 'MONGO_DT'

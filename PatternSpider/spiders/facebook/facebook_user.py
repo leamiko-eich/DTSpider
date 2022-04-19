@@ -69,8 +69,11 @@ class FacebookUserSpider(RedisSpider):
 
         self.logger.info('开始解析数据')
         over_data = {
+            'object_type': task['raw']['total_task_infos']['user_info']['object_type'],
+            'object_number': task['raw']['total_task_infos']['user_info']['object_number'],
             'homepage': "https://www.facebook.com/{}".format(task['raw']['username']),
             'jumpname': task['raw']['username']
+
         }
         re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
         bboxes = re.findall(re_pattern, page_source)
@@ -84,7 +87,7 @@ class FacebookUserSpider(RedisSpider):
                     'name': user['name'],
                     'avatar': user['profilePicLarge']['uri'],
                     'gender': user['gender'],
-                    'friends_count': friends_count,
+                    'friends_count': friends_count
                 })
             if 'field_type' in box:
                 profile_fields = self.dict_util.get_data_from_field(json.loads(box), 'profile_fields')
