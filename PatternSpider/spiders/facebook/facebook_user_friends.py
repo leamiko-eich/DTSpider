@@ -119,6 +119,11 @@ class FacebookUserFriendsSpider(RedisSpider):
                 user_id = node['node']['id'] if 'node' in node and 'id' in node['node'] else ''
                 if not user_id:
                     continue
+
+                title = ''
+                if 'subtitle_text' in node:
+                    if 'text' in node['subtitle_text']:
+                        title = node['subtitle_text']['text']
                 friend.update({
                     "source_userid": task['user_info'].get("userid", ""),
                     "source_username": task['user_info'].get("name", ""),
@@ -130,7 +135,7 @@ class FacebookUserFriendsSpider(RedisSpider):
                     'name': node['title']['text'] if 'title' in node and 'text' in node['title'] else '',
                     'avatar': node['image']['uri'] if 'image' in node else '',
                     'subname': node['subtitle_text'] if 'subtitle_text' in node else '',
-                    'title': node['subtitle_text']['text'] if 'subtitle_text' in node else '',
+                    'title': title,
                 })
                 over_datas.append(friend)
 
