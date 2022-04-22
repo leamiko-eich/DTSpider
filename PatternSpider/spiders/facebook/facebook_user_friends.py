@@ -121,7 +121,7 @@ class FacebookUserFriendsSpider(RedisSpider):
                     continue
 
                 title = ''
-                if 'subtitle_text' in node:
+                if 'subtitle_text' in node and node['subtitle_text']:
                     if 'text' in node['subtitle_text']:
                         title = node['subtitle_text']['text']
                 friend.update({
