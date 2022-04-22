@@ -117,3 +117,30 @@ REDIS_DT = {
 #     'ak': "minioadmin",
 #     'sk': "minioadmin",
 # }
+
+# kafka系列
+KAFKA_PRODUCER_lOCAL = {
+    "role": "producer",
+    "host": '127.0.0.1',
+    "port": 9092,
+}
+KAFKA_CONSUMER_lOCAL = {
+    "role": "consumer",
+    "host": '127.0.0.1',
+    "port": 9092,
+}
+
+# neo4j系列
+NEO4J_LOCAL = {
+    "host": '127.0.0.1',
+    "port": 27017,
+    "user": 'root',
+    "pwd": '123456',
+}
+
+# kafka 系列：
+KAFKA_HUAWEI_PRODUCER = {
+    'hosts': ['124.70.91.143:9092', '114.116.252.30:9092', '124.70.80.3:9092'],
+    'name': 'producer',
+    'password': 'producer'
+}

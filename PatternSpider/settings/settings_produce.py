@@ -97,3 +97,10 @@ REDIS_DT = {
     'pwd': '',
     'database': 0,
 }
+
+# kafka 系列：
+KAFKA_HUAWEI_PRODUCER = {
+    'hosts': ['124.70.91.143:9092', '114.116.252.30:9092', '124.70.80.3:9092'],
+    'name': 'producer',
+    'password': 'producer'
+}

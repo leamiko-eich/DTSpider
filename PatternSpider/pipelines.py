@@ -71,6 +71,9 @@ class DataBasePipeline(object):
         # if 'minio' in SpiderTableNames[spider.name]:
         #     tables += SpiderTableNames[spider.name]['minio']
 
+        if 'kafka' in SpiderTableNames[spider.name]:
+            tables += SpiderTableNames[spider.name]['kafka']
+
         for table in tables:
             try:
                 run(table, item=item)

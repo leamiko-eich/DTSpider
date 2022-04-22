@@ -33,7 +33,6 @@ class MysqlModel:
     def __del__(self):
         try:
             self.cursor.close()
-            self.db.close()
         except Exception as e:
             print(str(e))
             pass

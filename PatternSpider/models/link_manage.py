@@ -18,6 +18,7 @@ from minio import Minio
 from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
 from dbutils.pooled_db import PooledDB
+from kafka import KafkaProducer
 
 
 class LinkManege(object):
@@ -34,8 +35,15 @@ class LinkManege(object):
 
         return LinkManege._instance
 
-    # ##################################################基础获取连接方法#####################################################
+    def __del__(self):
+        for i in self.db_pool:
+            try:
+                self.db_pool[i].close()
+            except Exception as e:
+                print(e)
+                pass
 
+    # ##################################################基础获取连接方法#####################################################
     # 添加连接缓存对象
     def __set_db_pool(self, group, conn):
         self.db_pool[group] = conn
@@ -157,6 +165,57 @@ class LinkManege(object):
 
     # 获取mongo连接
     def get_mongo_db(self, client_name):
+        client = self.__get_db_pool(client_name)
+        if client != {}:
+            try:
+                client.get_database("admin")
+            except Exception as e:
+                print(e)
+                client = self.__mongo_client(client_name)
+        else:
+            client = self.__mongo_client(client_name)
+        return client
+
+    # #################################################获取kafka连接####################################################
+    # 获取kafka连接
+    def __kafka_client(self, client_name):
+        db_config = self.settings.get(client_name)
+        client = KafkaProducer(
+            sasl_mechanism="PLAIN",
+            security_protocol='SASL_PLAINTEXT',
+            sasl_plain_username=db_config['name'],
+            sasl_plain_password=db_config['password'],
+            bootstrap_servers=db_config['hosts']
+        )
+        self.__set_db_pool(client_name, client)
+        return client
+
+    # 获取kafka连接
+    def get_kafka_client(self, client_name):
+        client = self.__get_db_pool(client_name)
+        if client != {}:
+            try:
+                # todo 测试连接是否连通
+                return client
+            except Exception as e:
+                print(e)
+                client = self.__kafka_client(client_name)
+        else:
+            client = self.__kafka_client(client_name)
+        return client
+
+    # #################################################获取neo4j连接####################################################
+    # 获取neo4j连接
+    def __neo4j_client(self, client_name):
+        db_config = self.settings.get(client_name)
+        mongo_str = "mongodb://%s:%s/" % (db_config["host"], db_config['port'])
+        client = MongoClient(mongo_str, connect=False)
+        client.admin.authenticate(db_config["user"], db_config["pwd"], mechanism='SCRAM-SHA-1')
+        self.__set_db_pool(client_name, client)
+        return client
+
+    # 获取mongo连接
+    def get_neo4j_db(self, client_name):
         client = self.__get_db_pool(client_name)
         if client != {}:
             try:

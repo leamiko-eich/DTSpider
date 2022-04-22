@@ -66,15 +66,18 @@ SpiderTableNames = {
     },
     SpiderNames.facebook_user: {
         'mongo': ['MONGO_DT/facebook/user'],
-        'mysql': ['MYSQL_DT/social_data/fb_user']
+        'mysql': ['MYSQL_DT/social_data/fb_user'],
+        'kafka': ['KAFKA_HUAWEI_PRODUCER/lff_pattern_fb_user']
     },
     SpiderNames.facebook_user_friends: {
         'mongo': ['MONGO_DT/facebook/friends'],
-        'mysql': ['MYSQL_DT/social_data/fb_friend']
+        'mysql': ['MYSQL_DT/social_data/fb_friend'],
+        'kafka': ['KAFKA_HUAWEI_PRODUCER/lff_pattern_fb_friend']
     },
     SpiderNames.facebook_user_guess: {
         'mongo': ['MONGO_DT/facebook/guess'],
-        'mysql': ['MYSQL_DT/social_data/fb_timeline']
+        'mysql': ['MYSQL_DT/social_data/fb_timeline'],
+        'kafka': ['KAFKA_HUAWEI_PRODUCER/lff_pattern_fb_timeline']
     },
     SpiderNames.facebook_post_like: {
         'mongo': ['MONGO_DT/facebook/post_like_user'],
