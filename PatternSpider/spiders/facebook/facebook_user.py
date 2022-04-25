@@ -48,10 +48,10 @@ class FacebookUserSpider(RedisSpider):
             'account_status': account_status
         }
         self.logger.info(self.login_data)
-        time.sleep(self.facebook_util.init_sleep)
 
     @ding_alarm('spiders', name, logger)
     def parse(self, response):
+        time.sleep(self.facebook_util.init_sleep)
         self.logger.info('1 解析响应')
         task = json.loads(response.meta['task'])
         self.facebook_util.update_current_user_status(task, 1)
