@@ -133,9 +133,9 @@ KAFKA_CONSUMER_lOCAL = {
 # neo4j系列
 NEO4J_LOCAL = {
     "host": '127.0.0.1',
-    "port": 27017,
-    "user": 'root',
-    "pwd": '123456',
+    "port": 7474,
+    "user": 'neo4j',
+    "password": '123456',
 }
 
 # kafka 系列：

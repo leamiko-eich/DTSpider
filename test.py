@@ -22,5 +22,25 @@ from PatternSpider.cookies_manage.facebook_cookies import FacebookCookies
 # FacebookCookies().write_to_redis(123455, [{"a": 123, 'v': 234}])
 # FacebookCookies().write_to_redis(123455, [{"a": "wqweqweqd", 'v': 234},{"s":123132}])
 from scrapy.cmdline import execute
+from PatternSpider.settings.spider_names import SpiderNames
+from scrapy.cmdline import execute
 
-execute(('scrapy crawls facebook_user_friends').split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_equipment_directories).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_equipment_list).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_equipment_detail).split())
+
+
+# execute(('scrapy crawl ' + SpiderNames.deagel_country_list).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_country_detail).split())
+
+# execute(('scrapy crawl ' + SpiderNames.deagel_reports_list).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_reports_detail).split())
+
+# execute(('scrapy crawl ' + SpiderNames.deagel_news_list).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_news_detail).split())
+
+# execute(('scrapy crawl ' + SpiderNames.deagel_gallery_list).split())
+execute(('scrapy crawl ' + SpiderNames.deagel_gallery_detail).split())
+
+
+

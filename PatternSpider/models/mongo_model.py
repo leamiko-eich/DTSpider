@@ -108,6 +108,7 @@ class MongoFacebookFriend(MongoModel):
         }
         self.save_one_item(item, filter_coll)
 
+
 class MongoFacebookFriendApi(MongoModel):
     CLIENTNAME = 'MONGO_DT'
     DATABASE = 'facebook'
@@ -167,6 +168,129 @@ class MongoFacebookPostComment(MongoModel):
     DATABASE = 'facebook'
     COLL = 'post_comment'
     UNIONFILED = 'comment_id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelEquipmentDir(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'equipment_directories'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelEquipmentList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'equipment_list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelEquipmentDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'equipment_detail'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelCountryList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'country_list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelCountryDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'country_detail'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+
+class MongoDeagelReportsList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'reports_list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelReportsDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'reports_detail'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+
+class MongoDeagelNewsList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'news_list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelNewsDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'news_detail'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelGalleryList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'gallery_list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoDeagelGalleryDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'deagel'
+    COLL = 'gallery_detail'
+    UNIONFILED = 'id'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
 
     def run(self, item):

@@ -19,6 +19,7 @@ from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
 from dbutils.pooled_db import PooledDB
 from kafka import KafkaProducer
+from py2neo import Graph
 
 
 class LinkManege(object):
@@ -82,7 +83,7 @@ class LinkManege(object):
         pool = PooledDB(
             creator=pymysql,
             mincached=1,
-            maxcached=5,
+            maxcached=2,
             host=client_config["host"],
             user=client_config["user"],
             passwd=client_config["pwd"],
@@ -208,23 +209,25 @@ class LinkManege(object):
     # 获取neo4j连接
     def __neo4j_client(self, client_name):
         db_config = self.settings.get(client_name)
-        mongo_str = "mongodb://%s:%s/" % (db_config["host"], db_config['port'])
-        client = MongoClient(mongo_str, connect=False)
-        client.admin.authenticate(db_config["user"], db_config["pwd"], mechanism='SCRAM-SHA-1')
+        client = Graph(
+            'http://%s:%s' % (db_config["host"], db_config['port']),
+            auth=(db_config['user'], db_config['password'])
+        )
         self.__set_db_pool(client_name, client)
         return client
 
-    # 获取mongo连接
+    # 获取neo4j连接
     def get_neo4j_db(self, client_name):
         client = self.__get_db_pool(client_name)
         if client != {}:
             try:
-                client.get_database("admin")
+                # todo 测试连通性
+                return client
             except Exception as e:
                 print(e)
-                client = self.__mongo_client(client_name)
+                client = self.__neo4j_client(client_name)
         else:
-            client = self.__mongo_client(client_name)
+            client = self.__neo4j_client(client_name)
         return client
 
 

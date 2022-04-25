@@ -8,7 +8,10 @@
 # @Version : 1.0
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
-from PatternSpider.selenium_manage.base_chrome import BaseChrome
+from PatternSpider.selenium_manage.base_chrome import FacebookChrome
+from PatternSpider.utils.logger_utils import get_logger
+import json
+logger = get_logger('test')
 
 
 def get_handle(driver, handle_index):
@@ -23,28 +26,15 @@ def get_handle(driver, handle_index):
         driver.switch_to.window(handle_index)
 
 
-chrome = BaseChrome().get_new_chrome(False)
+facebook_chrome = FacebookChrome(logger=logger, headless=False)
+login_res, account_status = facebook_chrome.login_facebook()
+
+# 打印当前cookies
+# 打开新的chorme ，输入cookie，访问Facebook
+new_chrome = FacebookChrome(logger=logger, headless=False)
+new_chrome.driver.get("https://www.facebook.com/")
+for i in facebook_chrome.driver.get_cookies():
+    new_chrome.driver.add_cookie(i)
+new_chrome.driver.get("https://www.facebook.com/profile.php?id=100069879049118")
+
 print(123)
-
-get_handle(chrome, 0)
-# 打开新的标签页
-baidu = chrome.execute_script('window.open("http://www.baidu.com");')
-# 获取当前标签页的索引
-baidu_index = chrome.window_handles[-1]
-print("baidu", baidu_index)
-
-get_handle(chrome, 0)
-# 打开新的标签页
-csdn = chrome.execute_script('window.open("https://bbs.csdn.net/topics/394777261");')
-# 获取当前标签页的索引
-csdn_index = chrome.window_handles[-1]
-print("csdn", csdn_index)
-
-get_handle(chrome, 0)
-# 打开新的标签页
-runoob = chrome.execute_script('window.open("https://www.runoob.com/mysql/mysql-index.html");')
-# 获取当前标签页的索引
-runoob_index = chrome.window_handles[-1]
-print("runoob", runoob_index)
-
-print('debuug')

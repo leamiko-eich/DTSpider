@@ -39,12 +39,19 @@ class SpiderNames:
     # deagel
     deagel_equipment_directories = 'deagel_equipment_directories'
     deagel_equipment_list = 'deagel_equipment_list'
-    deagel_equipment = 'deagel_equipment'
+    deagel_equipment_detail = 'deagel_equipment_detail'
 
-    deagel_countries = 'deagel_countries'
-    deagel_reports = 'deagel_reports'
-    deagel_news = 'deagel_news'
-    deagel_gallery = 'deagel_gallery'
+    deagel_country_list = 'deagel_country_list'
+    deagel_country_detail = 'deagel_country_detail'
+
+    deagel_reports_list = 'deagel_reports_list'
+    deagel_reports_detail = 'deagel_reports_detail'
+
+    deagel_news_list = 'deagel_news_list'
+    deagel_news_detail = 'deagel_news_detail'
+
+    deagel_gallery_list = 'deagel_gallery_list'
+    deagel_gallery_detail = 'deagel_gallery_detail'
 
 
 SpiderTableNames = {

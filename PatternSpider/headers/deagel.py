@@ -9,7 +9,6 @@
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 import json
-import requests
 from urllib.parse import urlencode
 from PatternSpider.settings.spider_names import SpiderNames
 from PatternSpider.headers import BaseHeaders
@@ -39,60 +38,85 @@ class EquipmentDirectories(DeagelBase):
     Uri = 'https://deagel.com/api/directories'
     name = SpiderNames.deagel_equipment_directories
 
+    def get_url(self, **kwargs):
+        return self.Uri
+
 
 class EquipmentList(DeagelBase):
     Uri = 'https://deagel.com/api/directoryContent/{}'
     name = SpiderNames.deagel_equipment_list
 
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['directory_name'])
 
-class Equipment(DeagelBase):
+
+class EquipmentDetail(DeagelBase):
     Uri = 'https://deagel.com/api/equipment/{}'
-    name = SpiderNames.deagel_equipment
+    name = SpiderNames.deagel_equipment_detail
 
     def get_url(self, **kwargs):
-        equipment_id = kwargs['equipment_id']
-        return self.Uri.format(equipment_id)
+        return self.Uri.format(kwargs['equipment_id'])
 
 
-
-class Countries(DeagelBase):
-    Uri = 'https://twitter.com/i/api/graphql/{}/UserTweets?'
-    name = SpiderNames.deagel_countries
+class CountryList(DeagelBase):
+    Uri = 'https://deagel.com/api/country'
+    name = SpiderNames.deagel_country_list
 
     def get_url(self, **kwargs):
-        variables = {
-            "userId": kwargs['userId'],
-            "count": kwargs['count'] if 'conut' in kwargs else 40,
-            "includePromotedContent": "true",
-            "withQuickPromoteEligibilityTweetFields": "true",
-            "withSuperFollowsUserFields": "true",
-            "withBirdwatchPivots": "false",
-            "withDownvotePerspective": "false",
-            "withReactionsMetadata": "false",
-            "withReactionsPerspective": "false",
-            "withSuperFollowsTweetFields": "true",
-            "withVoice": "true",
-            "withV2Timeline": "false",
-            "__fs_interactive_text": "false",
-            "__fs_dont_mention_me_view_api_enabled": "false"
-        }
-        if 'cursor' in kwargs:
-            variables.update({'cursor': kwargs['cursor']})
-        params_data = {"variables": json.dumps(variables)}
-        url = self.Uri.format(self.infos['user_tweets']) + urlencode(params_data)
-        return url
+        return self.Uri
 
 
-class Reports(DeagelBase):
-    Uri = 'https://twitter.com/i/api/graphql/{}/UserTweets?'
-    name = SpiderNames.deagel_reports
+class CountryDetail(DeagelBase):
+    Uri = 'https://deagel.com/api/countryByName/{}'
+    name = SpiderNames.deagel_country_detail
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['country_name'])
 
 
-class News(DeagelBase):
-    Uri = 'https://twitter.com/i/api/graphql/{}/UserTweets?'
-    name = SpiderNames.deagel_news
+class ReportsList(DeagelBase):
+    Uri = 'https://deagel.com/api/reports'
+    name = SpiderNames.deagel_reports_list
+
+    def get_url(self, **kwargs):
+        return self.Uri
 
 
-class Gallery(DeagelBase):
-    Uri = 'https://twitter.com/i/api/graphql/{}/UserTweets?'
-    name = SpiderNames.deagel_gallery
+class ReportsDetail(DeagelBase):
+    Uri = 'https://deagel.com/api/{}/{}'
+    name = SpiderNames.deagel_reports_detail
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['path'], kwargs['id'])
+
+
+class NewsList(DeagelBase):
+    Uri = 'https://deagel.com/api/newsFilter?keyword=&page={}&year=&type=&country=&corp=&equipment='
+    name = SpiderNames.deagel_news_list
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['page'])
+
+
+class NewsDetail(DeagelBase):
+    Uri = 'https://deagel.com/api/newsDetail/{}'
+    name = SpiderNames.deagel_news_detail
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['id'])
+
+
+class GalleryList(DeagelBase):
+    Uri = 'https://deagel.com/api/photoFilter?keyword=&page={}&year=&country=&equipment='
+    name = SpiderNames.deagel_gallery_list
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['page'])
+
+
+class GalleryDetail(DeagelBase):
+    Uri = 'https://deagel.com/api/photoDetail/{}'
+    name = SpiderNames.deagel_gallery_detail
+
+    def get_url(self, **kwargs):
+        return self.Uri.format(kwargs['id'])

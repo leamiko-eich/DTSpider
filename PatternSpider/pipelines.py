@@ -16,7 +16,7 @@ import traceback
 from scrapy import Request
 from scrapy.pipelines.images import ImagesPipeline
 from PatternSpider.models import run
-from PatternSpider.settings.spider_names import SpiderTableNames
+from PatternSpider.settings.spider_names import SpiderTableNames, SpiderNames
 from scrapy.utils.project import get_project_settings
 from PatternSpider.servers.ding_talk_server import DingTalk
 
@@ -80,4 +80,65 @@ class DataBasePipeline(object):
             except:
                 error = "current spider is：{}\npipeline error info is：\n {}".format(spider.name, traceback.format_exc())
                 DingTalk().send_msg(error)
+        return item
+
+
+class MongoPipeline(object):
+    def __init__(self):
+        self.db = None
+
+    def open_spider(self, spider):
+        if spider.name == SpiderNames.deagel_equipment_directories:
+            from PatternSpider.models.mongo_model import MongoDeagelEquipmentDir
+            self.db = MongoDeagelEquipmentDir()
+        elif spider.name == SpiderNames.deagel_equipment_list:
+            from PatternSpider.models.mongo_model import MongoDeagelEquipmentList
+            self.db = MongoDeagelEquipmentList()
+        elif spider.name == SpiderNames.deagel_equipment_detail:
+            from PatternSpider.models.mongo_model import MongoDeagelEquipmentDetail
+            self.db = MongoDeagelEquipmentDetail()
+
+        elif spider.name == SpiderNames.deagel_country_list:
+            from PatternSpider.models.mongo_model import MongoDeagelCountryList
+            self.db = MongoDeagelCountryList()
+        elif spider.name == SpiderNames.deagel_country_detail:
+            from PatternSpider.models.mongo_model import MongoDeagelCountryDetail
+            self.db = MongoDeagelCountryDetail()
+
+        elif spider.name == SpiderNames.deagel_reports_list:
+            from PatternSpider.models.mongo_model import MongoDeagelReportsList
+            self.db = MongoDeagelReportsList()
+        elif spider.name == SpiderNames.deagel_reports_detail:
+            from PatternSpider.models.mongo_model import MongoDeagelReportsDetail
+            self.db = MongoDeagelReportsDetail()
+
+        elif spider.name == SpiderNames.deagel_news_list:
+            from PatternSpider.models.mongo_model import MongoDeagelNewsList
+            self.db = MongoDeagelNewsList()
+        elif spider.name == SpiderNames.deagel_news_detail:
+            from PatternSpider.models.mongo_model import MongoDeagelNewsDetail
+            self.db = MongoDeagelNewsDetail()
+
+        elif spider.name == SpiderNames.deagel_gallery_list:
+            from PatternSpider.models.mongo_model import MongoDeagelGalleryList
+            self.db = MongoDeagelGalleryList()
+        elif spider.name == SpiderNames.deagel_gallery_detail:
+            from PatternSpider.models.mongo_model import MongoDeagelGalleryDetail
+            self.db = MongoDeagelGalleryDetail()
+
+    def close_spider(self, spider):
+        self.db.close() if self.db else None
+
+    def process_item(self, item, spider):
+        self.db.run(item)
+        return item
+
+
+class Neo4jPipeline(object):
+    def __init__(self):
+        from PatternSpider.models.neo4j_model import Neo4jModel
+        self.neo4j = Neo4jModel()
+
+    def process_item(self, item, spider):
+        self.neo4j.save_node(item)
         return item
