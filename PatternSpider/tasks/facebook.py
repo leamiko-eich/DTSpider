@@ -208,7 +208,7 @@ class FacebookTask(TaskManage):
         elif mode == 'daily':
             fb_user = TableFBDailyUser()
             for group_id in group_ids:
-                fb_mysql_task += fb_user.find({'group_id': int(group_id)})
+                fb_mysql_task += fb_user.find({'group_id': int(group_id), "crawl_status": 0})
 
             spider_name = self.add_facebook_user_guess_task(
                 user_infos=fb_mysql_task,
