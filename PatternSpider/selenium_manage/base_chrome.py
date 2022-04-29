@@ -362,6 +362,8 @@ class FacebookChrome(BaseChrome):
         except Exception as e:
             self.logger.error(str(e))
 
+        self.driver.refresh()
+        time.sleep(3)
         return self.check_login()
 
     def login_old(self):
