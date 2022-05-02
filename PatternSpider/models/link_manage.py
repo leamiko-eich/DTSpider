@@ -84,19 +84,13 @@ class LinkManege(object):
         client_config = self.settings.get(client_name)
         while 1:
             try:
-                # 重新连接
-                pool = PooledDB(
-                    creator=pymysql,
-                    mincached=1,
-                    maxcached=2,
+                conn = pymysql.connect(
                     host=client_config["host"],
                     user=client_config["user"],
-                    passwd=client_config["pwd"],
-                    db=client_config["database"],
+                    password=client_config["pwd"],
+                    database=client_config["database"],
                     port=client_config["port"],
-                    charset="utf8mb4",
-                    cursorclass=pymysql.cursors.DictCursor,
-                    autocommit=True, read_timeout=60, write_timeout=600, max_allowed_packet=500 * 1024 * 1024
+                    charset='utf8mb4',
                 )
                 break
             except Exception as e:
@@ -104,27 +98,24 @@ class LinkManege(object):
                 sleep_time = random.randint(10, 60)
                 print("sleep time:{},retry".format(sleep_time))
                 time.sleep(sleep_time)
-        self.__set_db_pool(client_name, pool)
-        return pool
+        self.__set_db_pool(client_name, conn)
+        return conn
 
     # mysql获取实例连接
     def get_mysql_db(self, client_name):
-        pool = self.__get_db_pool(client_name)
-        if pool != {}:
+        conn = self.__get_db_pool(client_name)
+        if conn != {}:
             try:
-                conn = pool.connection()
                 conn.ping(reconnect=True)
             except Exception as e:
                 try:
-                    pool.close()
+                    conn.close()
                 except:
                     pass
                 print(e)
-                pool = self.__get_mysql_connection(client_name)
-                conn = pool.connection()
+                conn = self.__get_mysql_connection(client_name)
         else:
-            pool = self.__get_mysql_connection(client_name)
-            conn = pool.connection()
+            conn = self.__get_mysql_connection(client_name)
         return conn
 
     # #################################################获取elasticsearch连接#############################################
