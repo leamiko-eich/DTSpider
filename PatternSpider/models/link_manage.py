@@ -10,7 +10,10 @@
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
 
 # -*- coding: UTF-8 -*-
+import random
 import threading
+import time
+
 import pymysql
 import redis
 from elasticsearch5 import Elasticsearch
@@ -79,20 +82,28 @@ class LinkManege(object):
     # mysql连接数据库
     def __get_mysql_connection(self, client_name):
         client_config = self.settings.get(client_name)
-        # 重新连接
-        pool = PooledDB(
-            creator=pymysql,
-            mincached=1,
-            maxcached=2,
-            host=client_config["host"],
-            user=client_config["user"],
-            passwd=client_config["pwd"],
-            db=client_config["database"],
-            port=client_config["port"],
-            charset="utf8mb4",
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True, read_timeout=60, write_timeout=600, max_allowed_packet=500 * 1024 * 1024
-        )
+        while 1:
+            try:
+                # 重新连接
+                pool = PooledDB(
+                    creator=pymysql,
+                    mincached=1,
+                    maxcached=2,
+                    host=client_config["host"],
+                    user=client_config["user"],
+                    passwd=client_config["pwd"],
+                    db=client_config["database"],
+                    port=client_config["port"],
+                    charset="utf8mb4",
+                    cursorclass=pymysql.cursors.DictCursor,
+                    autocommit=True, read_timeout=60, write_timeout=600, max_allowed_packet=500 * 1024 * 1024
+                )
+                break
+            except Exception as e:
+                print(e)
+                sleep_time = random.randint(10, 60)
+                print("sleep time:{},retry".format(sleep_time))
+                time.sleep(sleep_time)
         self.__set_db_pool(client_name, pool)
         return pool
 
@@ -104,6 +115,10 @@ class LinkManege(object):
                 conn = pool.connection()
                 conn.ping(reconnect=True)
             except Exception as e:
+                try:
+                    pool.close()
+                except:
+                    pass
                 print(e)
                 pool = self.__get_mysql_connection(client_name)
                 conn = pool.connection()
