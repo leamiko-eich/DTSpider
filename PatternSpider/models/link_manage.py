@@ -91,6 +91,7 @@ class LinkManege(object):
                     database=client_config["database"],
                     port=client_config["port"],
                     charset='utf8mb4',
+                    autocommit=True,
                 )
                 break
             except Exception as e:
