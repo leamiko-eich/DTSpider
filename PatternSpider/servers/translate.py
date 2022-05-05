@@ -70,19 +70,19 @@ class Translate:
                 break
         if flag:
             return text
-        return ""
+        # return ""
         # 如果有文本，翻译
-        # data = {
-        #     "srcl": "nen",
-        #     "tgtl": "nzh",
-        #     "text": text
-        # }
-        # try:
-        #     response = requests.post(self.URI, json=data, timeout=10)
-        #     return response.json()['translation'][0]['translated'][0]['text']
-        # except Exception as e:
-        #     print(e)
-        #     return ""
+        data = {
+            "srcl": "nen",
+            "tgtl": "nzh",
+            "text": text
+        }
+        try:
+            response = requests.post(self.URI, json=data, timeout=5)
+            return response.json()['translation'][0]['translated'][0]['text']
+        except Exception as e:
+            print(e)
+            return ""
 
 
 if __name__ == '__main__':
