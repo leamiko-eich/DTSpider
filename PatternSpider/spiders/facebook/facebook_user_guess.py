@@ -8,6 +8,7 @@
 # @Version : 1.0
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
+import base64
 import json
 import re
 import time
@@ -149,14 +150,7 @@ class FacebookUserGuessSpider(RedisSpider):
             context_layout = comet_sections['context_layout']
             # 帖子网址
             post_url = story['wwwURL']
-            # 帖子id：
-            datasource = self.dict_util.get_data_from_field(node, 'mentions_datasource_js_constructor_args_json')
-            if datasource and type(datasource) == str:
-                post_id = self.dict_util.get_data_from_field(json.loads(datasource), 'post_fbid')
-            else:
-                post_id = None
-            post_id = post_id if post_id else post_url.split('/')[-1]
-            post_id = str(post_id).split(':')[0]
+            post_id = self.get_post_id(story, node, post_url)
             # 创建时间
             creation_time = self.dict_util.get_data_from_field(context_layout, 'creation_time')
             creation_time = timestamp_to_datetime(creation_time) if creation_time else timestamp_to_datetime('0')
@@ -274,6 +268,26 @@ class FacebookUserGuessSpider(RedisSpider):
             self.facebook_chrome.get_handle(0)
         except:
             self.facebook_chrome.get_handle(0)
+
+    @ding_alarm("spiders", name, logger)
+    def get_post_id(self, story, node, post_url):
+        try:
+            post_id = str(base64.b64decode(story["id"]), encoding='utf-8').split(':')[-1]
+            return post_id
+        except:
+            self.logger.info("第一种获取post_id 的方式失败")
+            pass
+        try:
+            # 帖子id：
+            datasource = self.dict_util.get_data_from_field(node, 'mentions_datasource_js_constructor_args_json')
+            post_id = self.dict_util.get_data_from_field(json.loads(datasource), 'post_fbid')
+            return post_id
+        except:
+            self.logger.info("第二种获取post_id 的方式失败")
+            pass
+        post_id = post_url.split('/')[-1]
+        post_id = str(post_id).split(':')[0]
+        return post_id
 
 
 if __name__ == '__main__':
