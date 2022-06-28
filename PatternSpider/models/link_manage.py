@@ -189,7 +189,7 @@ class LinkManege(object):
     def __kafka_client(self, client_name):
         db_config = self.settings.get(client_name)
         client = KafkaProducer(
-            sasl_mechanism="PLAIN",
+            sasl_mechanism="SCRAM-SHA-512",
             security_protocol='SASL_PLAINTEXT',
             sasl_plain_username=db_config['name'],
             sasl_plain_password=db_config['password'],

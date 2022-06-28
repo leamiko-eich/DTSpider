@@ -8,8 +8,6 @@
 # @Version : 1.0
 
 # Copyright (C) 2022 北京盘拓数据科技有限公司 All Rights Reserved
-import json
-from urllib.parse import urlencode
 from PatternSpider.settings.spider_names import SpiderNames
 from PatternSpider.headers import BaseHeaders
 

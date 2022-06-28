@@ -53,6 +53,13 @@ class SpiderNames:
     deagel_gallery_list = 'deagel_gallery_list'
     deagel_gallery_detail = 'deagel_gallery_detail'
 
+    # marineregions
+    marineregions_list = "marineregions_list"
+    marineregions_detail = "marineregions_detail"
+
+    # endbcity
+    endbcity = "endbcity"
+
 
 SpiderTableNames = {
     # dvidshun spider image data:

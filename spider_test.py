@@ -28,13 +28,13 @@ def get_handle(driver, handle_index):
 
 facebook_chrome = FacebookChrome(logger=logger, headless=False)
 login_res, account_status = facebook_chrome.login_facebook()
-
+print(login_res)
 # 打印当前cookies
 # 打开新的chorme ，输入cookie，访问Facebook
-new_chrome = FacebookChrome(logger=logger, headless=False)
-new_chrome.driver.get("https://www.facebook.com/")
-for i in facebook_chrome.driver.get_cookies():
-    new_chrome.driver.add_cookie(i)
-new_chrome.driver.get("https://www.facebook.com/profile.php?id=100069879049118")
+# new_chrome = FacebookChrome(logger=logger, headless=False)
+# new_chrome.login_facebook()
+# new_chrome.driver.get("https://www.facebook.com/")
+# for i in facebook_chrome.driver.get_cookies():
+#     new_chrome.driver.add_cookie(i)
+# new_chrome.driver.get("https://www.facebook.com/profile.php?id=100069879049118")
 
-print(123)

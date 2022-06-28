@@ -229,7 +229,6 @@ class MongoDeagelCountryDetail(MongoModel):
         self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
 
 
-
 class MongoDeagelReportsList(MongoModel):
     CLIENTNAME = 'MONGO_DT'
     DATABASE = 'deagel'
@@ -250,7 +249,6 @@ class MongoDeagelReportsDetail(MongoModel):
 
     def run(self, item):
         self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
-
 
 
 class MongoDeagelNewsList(MongoModel):
@@ -291,6 +289,39 @@ class MongoDeagelGalleryDetail(MongoModel):
     DATABASE = 'deagel'
     COLL = 'gallery_detail'
     UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoMarineregionsList(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'marineregions'
+    COLL = 'list'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoMarineregionsDetail(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'marineregions'
+    COLL = 'detail'
+    UNIONFILED = 'id'
+    name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
+
+    def run(self, item):
+        self.save_one_item(item, {self.UNIONFILED: item[self.UNIONFILED]})
+
+
+class MongoENDBCity(MongoModel):
+    CLIENTNAME = 'MONGO_DT'
+    DATABASE = 'endbcity'
+    COLL = 'list'
+    UNIONFILED = 'request_url'
     name = '{}/{}/{}'.format(CLIENTNAME, DATABASE, COLL)
 
     def run(self, item):

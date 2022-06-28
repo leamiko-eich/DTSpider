@@ -88,6 +88,7 @@ class MongoPipeline(object):
         self.db = None
 
     def open_spider(self, spider):
+        # deagel
         if spider.name == SpiderNames.deagel_equipment_directories:
             from PatternSpider.models.mongo_model import MongoDeagelEquipmentDir
             self.db = MongoDeagelEquipmentDir()
@@ -125,6 +126,19 @@ class MongoPipeline(object):
         elif spider.name == SpiderNames.deagel_gallery_detail:
             from PatternSpider.models.mongo_model import MongoDeagelGalleryDetail
             self.db = MongoDeagelGalleryDetail()
+
+        # marineregions
+        elif spider.name == SpiderNames.marineregions_list:
+            from PatternSpider.models.mongo_model import MongoMarineregionsList
+            self.db = MongoMarineregionsList()
+        elif spider.name == SpiderNames.marineregions_detail:
+            from PatternSpider.models.mongo_model import MongoMarineregionsDetail
+            self.db = MongoMarineregionsDetail()
+
+        # endbcity
+        elif spider.name == SpiderNames.endbcity:
+            from PatternSpider.models.mongo_model import MongoENDBCity
+            self.db = MongoENDBCity()
 
     def close_spider(self, spider):
         self.db.close() if self.db else None

@@ -40,7 +40,9 @@ from scrapy.cmdline import execute
 # execute(('scrapy crawl ' + SpiderNames.deagel_news_detail).split())
 
 # execute(('scrapy crawl ' + SpiderNames.deagel_gallery_list).split())
-execute(('scrapy crawl ' + SpiderNames.deagel_gallery_detail).split())
+# execute(('scrapy crawl ' + SpiderNames.deagel_gallery_detail).split())
 
+# execute(('scrapy crawl ' + SpiderNames.marineregions_list).split())
+# execute(('scrapy crawl ' + SpiderNames.marineregions_detail).split())
 
-
+execute(('scrapy crawl ' + SpiderNames.endbcity).split())
