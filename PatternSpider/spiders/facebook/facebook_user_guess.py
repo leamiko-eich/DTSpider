@@ -146,6 +146,8 @@ class FacebookUserGuessSpider(RedisSpider):
         over_datas = []
         for node in guess_nodes:
             comet_sections = self.dict_util.get_data_from_field(node, 'comet_sections')
+            if not comet_sections:
+                continue
             story = comet_sections['content']['story']
             context_layout = comet_sections['context_layout']
             # 帖子网址
@@ -267,7 +269,10 @@ class FacebookUserGuessSpider(RedisSpider):
             self.facebook_chrome.driver.close()
             self.facebook_chrome.get_handle(0)
         except:
-            self.facebook_chrome.get_handle(0)
+            try:
+                self.facebook_chrome.get_handle(0)
+            except:
+                self.facebook_chrome = FacebookChrome(logger=self.logger, headless=self.facebook_util.headless)
 
     @ding_alarm("spiders", name, logger)
     def get_post_id(self, story, node, post_url):
