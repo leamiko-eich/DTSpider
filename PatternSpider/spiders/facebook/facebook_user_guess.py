@@ -78,7 +78,7 @@ class FacebookUserGuessSpider(RedisSpider):
             return self.close_current_task(task)
 
         self.logger.info('第一次数据开始解析,{}'.format(task['url']))
-        re_pattern = '\{"__bbox":\{.*?extra_context.*?\}\}'
+        re_pattern = '\{"__bbox":\{.*?extra_context.*\}\}'
         bboxes = re.findall(re_pattern, page_source)
         if not bboxes:
             return self.close_current_task(task)
