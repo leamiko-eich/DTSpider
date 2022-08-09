@@ -85,7 +85,7 @@ class KafkaPatternFBTimelineConsumer(KafkaModel):
             "post_title_ranges": item.get('post_title_ranges', None),
             "post_num": "",
             "post_attach": item.get('post_attach', None),
-            "share_content": item.get('post_attach', None),
+            "share_content": item.get('share_content', None),
             "location": item.get('location', None),
             "longitude": item.get('longitude', None),
             "latitude": item.get('latitude', None),
