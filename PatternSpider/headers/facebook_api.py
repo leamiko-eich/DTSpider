@@ -25,7 +25,6 @@ class FacebookApiBase(BaseHeaders):
             'xs': '20%3AIWuy4T0oTLyeXg%3A2%3A1649209107%3A-1%3A7613%3A%3AAcWJxF7yhGVzmkRL5Aj8vXgM62qXO2Q5sAcM1PGCsA',
             'fr': '0kFl8fqKia0BnEgFw.AWXMkL2AKBB-7KVE_NISVDs5H9g.BiWUZ-.A_.AAA.0.0.BiWUaB.AWWAeQgDgxY',
         }
-        # cookies = ''.join(['%s=%s;' % (i, cookies[i]) for i in cookies])
         is_api = kwargs.get('is_api')
         if is_api:
             lsd_token = kwargs.get('lsd_token')

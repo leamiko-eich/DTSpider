@@ -20,7 +20,6 @@ from elasticsearch5 import Elasticsearch
 from minio import Minio
 from pymongo import MongoClient
 from scrapy.utils.project import get_project_settings
-from dbutils.pooled_db import PooledDB
 from kafka import KafkaProducer
 from py2neo import Graph
 

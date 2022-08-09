@@ -25,7 +25,7 @@ class TwitterBase(BaseHeaders):
 
     def get_headers(self, **kwargs):
         print(kwargs)
-        raw = json.loads(kwargs['request'].meta['task'])['raw']
+        # raw = json.loads(kwargs['request'].meta['task'])['raw']
         return {
             'x-guest-token': self.infos['guest_token'],
             'authorization': self.infos['authorization'],
@@ -42,7 +42,8 @@ class TwitterBase(BaseHeaders):
             'sec-fetch-site': 'same-origin',
             'sec-fetch-mode': 'cors',
             'sec-fetch-dest': 'empty',
-            'referer': 'https://twitter.com/'.format(raw['username']),
+            # 'referer': 'https://twitter.com/'.format(raw['username']),
+            'referer': 'https://twitter.com/'.format(kwargs['username']),
             'accept-language': 'zh-CN,zh;q=0.9',
         }
 

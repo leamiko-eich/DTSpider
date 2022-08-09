@@ -214,7 +214,7 @@ class FacebookUtils:
                 if not user:
                     continue
                 user_info.update({
-                    'viewer_user_id': user['viewer']['actor']['id'],
+                    # 'viewer_user_id': viewer_user_id,
                     'userid': user['id'],
                     'name': user['name'],
                     'homepage': user['url']
