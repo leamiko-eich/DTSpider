@@ -278,18 +278,22 @@ class FacebookUserGuessSpider(RedisSpider):
     def get_post_id(self, story, node, post_url):
         try:
             post_id = str(base64.b64decode(story["id"]), encoding='utf-8').split(':')[-1]
+            if len(post_id) < 10:
+                post_id = str(base64.b64decode(story["id"]), encoding='utf-8').split(':')[-2]
+            if post_id == "":
+                raise Exception("go to next method")
             return post_id
-        except:
-            self.logger.info("第一种获取post_id 的方式失败")
-            pass
+        except Exception as _:
+            print("第一种获取post_id 的方式失败")
         try:
             # 帖子id：
             datasource = self.dict_util.get_data_from_field(node, 'mentions_datasource_js_constructor_args_json')
             post_id = self.dict_util.get_data_from_field(json.loads(datasource), 'post_fbid')
+            if not post_id:
+                raise Exception("go to next method")
             return post_id
-        except:
-            self.logger.info("第二种获取post_id 的方式失败")
-            pass
+        except Exception as _:
+            print("第二种获取post_id 的方式失败")
         post_id = post_url.split('/')[-1]
         post_id = str(post_id).split(':')[0]
         return post_id
