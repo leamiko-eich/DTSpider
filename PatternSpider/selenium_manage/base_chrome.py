@@ -114,7 +114,7 @@ class BaseChrome(BaseSelenium):
         options = self.get_log_options(headless)
         desired_capabilities = self.get_caps()
         # 这里也可以对options和caps加入其他的参数，比如代理参数等
-        for i in [101,96, 97, 98, 99]:
+        for i in [101, 96, 97, 98, 99, 101, 102, 103, 104, 105]:
             try:
                 chrome = webdriver.Chrome(
                     executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_{}.exe'.format(i)),
