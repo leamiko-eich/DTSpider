@@ -323,17 +323,17 @@ class FacebookChrome(BaseChrome):
         self.driver.implicitly_wait(3)  # 隐式等待
 
         # 如果已经登录过就不再登录:
-        cookies = self.facebook_cookie.get_random_username_cookie()
-        if cookies:
-            login_result = cookies['login_result']
-            if login_result['login_res'] == 1:
-                for i in login_result['cookies']:
-                    self.driver.add_cookie(i)
-                self.driver.refresh()
-                time.sleep(3)
-                return self.check_login()
-            else:
-                return 0, 6
+        # cookies = self.facebook_cookie.get_random_username_cookie()
+        # if cookies:
+        #     login_result = cookies['login_result']
+        #     if login_result['login_res'] == 1:
+        #         for i in login_result['cookies']:
+        #             self.driver.add_cookie(i)
+        #         self.driver.refresh()
+        #         time.sleep(3)
+        #         return self.check_login()
+        #     else:
+        #         return 0, 6
 
         # 输入账号密码
         self.driver.find_element_by_id("email").send_keys(self.account)
