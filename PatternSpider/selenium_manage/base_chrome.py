@@ -115,30 +115,28 @@ class BaseChrome(BaseSelenium):
 
     def get_log_options(self, headless):
         option = webdriver.ChromeOptions()
-        option.add_argument('--no-sandbox')
-        option.add_argument('--disable-gpu')
+        #option.add_argument('--no-sandbox')
+        #option.add_argument('--disable-gpu')
         option.add_argument('--headless') if headless else None
-        option.add_argument("--disable-extensions")
         option.add_argument("--allow-running-insecure-content")
-        option.add_argument("--ignore-certificate-errors")
-        option.add_argument("--disable-single-click-autofill")
-        option.add_argument("--disable-autofill-keyboard-accessory-view[8]")
-        option.add_argument("--disable-full-form-autofill-ios")
-        option.add_experimental_option('prefs',
-                                       {'profile.default_content_setting_values': {'notifications': 2, 'images': 2}})
+        # option.add_argument("--ignore-certificate-errors")
+        # option.add_argument("--disable-single-click-autofill")
+        # option.add_argument("--disable-autofill-keyboard-accessory-view[8]")
+        # option.add_argument("--disable-full-form-autofill-ios")
+        # option.add_experimental_option('prefs',
+        #                                {'profile.default_content_setting_values': {'notifications': 2, 'images': 2}})
 
         # 避免检测 and 不打印logger
         # options.add_experimental_option("excludeSwitches", ['enable-automation', 'enable-logging'])
-        option.add_argument(
-            'user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:55.0) Gecko/20100101 Firefox/55.0')
+        # option.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:55.0) Gecko/20100101 Firefox/55.0')
         option.add_experimental_option('w3c', False)
         option.add_experimental_option('perfLoggingPrefs', {
             'enableNetwork': True,
             'enablePage': False,
         })
         option.add_extension(self.get_chrome_proxy_extension(
-            proxy="liufeifantest-zone-isp-session-3129z7{}-sessTime-180:961206@proxy.ipidea.io:2336".format(
-                random.randint(100, 1000))))
+            proxy="liufeifantest-zone-isp-session-31223qy{}-sessTime-180:961206@proxy.ipidea.io:2336".format(
+                random.randint(10, 100))))
         return option
 
     @staticmethod
@@ -164,7 +162,7 @@ class BaseChrome(BaseSelenium):
         # 这里也可以对options和caps加入其他的参数，比如代理参数等
         try:
             chrome = webdriver.Chrome(
-                executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_99.exe'.format(i)),
+                executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_99.exe'),
                 options=options,
                 desired_capabilities=desired_capabilities
             )
