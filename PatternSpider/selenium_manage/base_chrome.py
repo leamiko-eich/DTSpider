@@ -115,8 +115,8 @@ class BaseChrome(BaseSelenium):
 
     def get_log_options(self, headless):
         option = webdriver.ChromeOptions()
-        #option.add_argument('--no-sandbox')
-        #option.add_argument('--disable-gpu')
+        # option.add_argument('--no-sandbox')
+        # option.add_argument('--disable-gpu')
         option.add_argument('--headless') if headless else None
         option.add_argument("--allow-running-insecure-content")
         # option.add_argument("--ignore-certificate-errors")
@@ -170,7 +170,7 @@ class BaseChrome(BaseSelenium):
         except Exception as msg:
             reg = "Current browser version is.+with"
             chrome_version = re.search(reg, str(msg)).group().replace("Current browser version is ", "").replace(
-                " with","")
+                " with", "")
             print("=================Chrome Version:" + chrome_version)
             chrome = webdriver.Chrome(
                 executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_{}.exe'.format(chrome_version)),
@@ -346,11 +346,12 @@ class FacebookChrome(BaseChrome):
             if account_status != 0:
                 login_res, account_status = 0, account_status
             else:
-                login_name = self.driver.find_element_by_xpath(
-                    '(//*[@class="a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7"])[position()=1]').text
-                self.logger.info("登录成功：{}".format(login_name))
-                cookies = self.driver.get_cookies()
-                login_res, account_status = 1, 0
+                if self.driver.current_url in ["https://www.facebook.com/", "http://www.facebook.com/"]:
+                    self.logger.info("登录成功")
+                    cookies = self.driver.get_cookies()
+                    login_res, account_status = 1, 0
+                else:
+                    login_res, account_status = 0, 4
         except Exception as e:
             self.logger.error('登录失败，请确认。account:{}\nerror:{}'.format(self.account, str(e)))
             login_res, account_status = 0, 4
