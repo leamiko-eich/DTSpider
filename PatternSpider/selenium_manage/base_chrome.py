@@ -134,9 +134,9 @@ class BaseChrome(BaseSelenium):
             'enableNetwork': True,
             'enablePage': False,
         })
-        option.add_extension(self.get_chrome_proxy_extension(
-            proxy="liufeifantest-zone-isp-session-{}vuhkv9-sessTime-200:961206@proxy.ipidea.io:2336".format(
-                random.randint(100, 1000))))
+        # option.add_extension(self.get_chrome_proxy_extension(
+        #     proxy="liufeifantest-zone-isp-session-{}vuhkv9-sessTime-200:961206@proxy.ipidea.io:2336".format(
+        #         random.randint(100, 1000))))
         return option
 
     @staticmethod
