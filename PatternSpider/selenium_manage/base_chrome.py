@@ -173,7 +173,8 @@ class BaseChrome(BaseSelenium):
                 " with", "")
             print("=================Chrome Version:" + chrome_version)
             chrome = webdriver.Chrome(
-                executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_{}.exe'.format(chrome_version)),
+                executable_path=os.path.join(os.getcwd(), 'chromedrivers\\chromedriver_{}.exe'.format(
+                    chrome_version.split('.')[0])),
                 options=options,
                 desired_capabilities=desired_capabilities
             )
